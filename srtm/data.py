@@ -157,7 +157,6 @@ class GeoElevationFile:
         self.square_side = int(square_side)
 
     def get_elevation(self, latitude, longitude):
-        # on 46,14 elevation should be ~550 meters
         start_latitude, start_longitude = self.latitude, self.longitude
 
         points = self.square_side ** 2
@@ -168,15 +167,21 @@ class GeoElevationFile:
         return self.get_elevation_from_row_and_column(row, column)
 
     def get_elevation_from_row_and_column(self, row, column):
-        #i = column * (self.square_side) + (self.square_side - row - 1)
         i = row * (self.square_side) + column
 
         mod_logging.debug('{0}, {1} -> {2}'.format(row, column, i))
 
+        pdb.set_trace()
         byte_1 = ord(self.data[i * 2])
         byte_2 = ord(self.data[i * 2 + 1])
 
-        return byte_1 * 256 + byte_2
+        result = byte_1 * 256 + byte_2
+
+        if result > 9000:
+            # TODO(TK) try to detect the elevation from neighbour point:
+            return None
+
+        return result
 
     def parse_file_name_starting_position(self):
         """ Returns (latitude, longitude) of lower left point of the file """
