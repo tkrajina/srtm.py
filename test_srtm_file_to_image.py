@@ -14,9 +14,10 @@ def get_color_between(color1, color2, i):
             int(color1[1] + (color2[1] - color1[1]) * i),
             int(color1[2] + (color2[2] - color1[2]) * i))
 
-ZERO_COLOR = (0  , 0  , 255, 255)
-MIN_COLOR  = (0  , 0  , 0  , 255)
-MAX_COLOR  = (0  , 255, 0  , 255)
+UNKNOWN_COLOR = (255, 255, 255, 255)
+ZERO_COLOR    = (0  , 0  , 255, 255)
+MIN_COLOR     = (0  , 0  , 0  , 255)
+MAX_COLOR     = (0  , 255, 0  , 255)
 
 width, height = 300, 300
 max_elevation = 300
@@ -40,16 +41,15 @@ for row in range(side):
     for column in range(side):
         elevation = geo_file.get_elevation_from_row_and_column(row, column)
 
-        if elevation != None:
+        if elevation == None:
+            color = UNKNOWN_COLOR
+        else:
             elevation_coef = elevation / float(max_elevation)
             if elevation_coef < 0: elevation_coef = 0
             if elevation_coef > 1: elevation_coef = 1
-        else:
-            elevation_coef = ZERO_COLOR
-
-        color = get_color_between(MIN_COLOR, MAX_COLOR, elevation_coef)
-        if elevation <= 0:
-            color = ZERO_COLOR
+            color = get_color_between(MIN_COLOR, MAX_COLOR, elevation_coef)
+            if elevation <= 0:
+                color = ZERO_COLOR
 
         draw.point((column, row), color)
 
