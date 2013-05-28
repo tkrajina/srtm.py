@@ -44,16 +44,19 @@ class GeoElevationData:
     # Lazy loaded files used in current app:
     files = None
 
-    def __init__(self, srtm1_files, srtm3_files):
+    def __init__(self, srtm1_files, srtm3_files, files_directory):
         self.srtm1_files = srtm1_files
         self.srtm3_files = srtm3_files
+        # Place where local files are stored:
+        self.files_directory = files_directory
 
         self.files = {}
 
     def get_elevation(self, latitude, longitude):
         geo_elevation_file = self.get_file(float(latitude), float(longitude))
 
-        mod_logging.debug('File for ({0}, {1}) -> {2}'.format(latitude, longitude, geo_elevation_file))
+        mod_logging.debug('File for ({0}, {1}) -> {2}'.format(
+                          latitude, longitude, geo_elevation_file))
 
         if not geo_elevation_file:
             return None
@@ -81,7 +84,7 @@ class GeoElevationData:
             return result
 
     def retrieve_or_load_file_data(self, file_name):
-        data_file_name = '{0}/{1}'.format(mod_retriever.LOCAL_FILES_DIRECTORY, file_name)
+        data_file_name = '{0}/{1}'.format(self.files_directory, file_name)
 
         if mod_path.exists(data_file_name):
             f = open(data_file_name)
