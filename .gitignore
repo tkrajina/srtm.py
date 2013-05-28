@@ -1,0 +1,7 @@
+*.tar
+*.zip
+*.hgt
+*.pyc
+*.swp
+*.swo
+tags
