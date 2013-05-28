@@ -2,7 +2,7 @@
 
 import Image as mod_image
 import ImageDraw as mod_imagedraw
-import srtm.retriever  as mod_retriever
+import srtm as mod_srtm
 
 def get_color_between(color1, color2, i):
     """ i is a number between 0 and 1, if 0 then color1, if 1 color2, ... """
@@ -25,7 +25,7 @@ start_latitude, start_longitude = 45.0, 13.0
 # Zašto ovo pukne?
 #start_latitude, start_longitude = 43.0, 14.0
 
-geo_elevation_data = mod_retriever.get_geo_elevation_data()
+geo_elevation_data = mod_srtm.get_data()
 geo_file = geo_elevation_data.get_file(start_latitude, start_longitude)
 
 side = geo_file.square_side
@@ -40,9 +40,12 @@ for row in range(side):
     for column in range(side):
         elevation = geo_file.get_elevation_from_row_and_column(row, column)
 
-        elevation_coef = elevation / float(max_elevation)
-        if elevation_coef < 0: elevation_coef = 0
-        if elevation_coef > 1: elevation_coef = 1
+        if elevation != None:
+            elevation_coef = elevation / float(max_elevation)
+            if elevation_coef < 0: elevation_coef = 0
+            if elevation_coef > 1: elevation_coef = 1
+        else:
+            elevation_coef = ZERO_COLOR
 
         color = get_color_between(MIN_COLOR, MAX_COLOR, elevation_coef)
         if elevation <= 0:
