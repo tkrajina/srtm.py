@@ -5,3 +5,5 @@
 *.swp
 *.swo
 tags
+MANIFEST
+dist/
