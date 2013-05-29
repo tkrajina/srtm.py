@@ -130,12 +130,12 @@ class GeoElevationData:
     def get_file_name(self, latitude, longitude):
         # Decide the file name:
 
-        if latitude > 0:
+        if latitude >= 0:
             north_south = 'N'
         else:
             north_south = 'S'
 
-        if longitude > 0:
+        if longitude >= 0:
             east_west = 'E'
         else:
             east_west = 'W'
