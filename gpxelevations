@@ -1,0 +1,64 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+import pdb
+
+import argparse as mod_argparse
+import gpxpy as mod_gpxpy
+
+import srtm as mod_srtm
+
+parser = mod_argparse.ArgumentParser(
+         description='Adds elevation to GPX files')
+
+parser.add_argument('-o', '--overwrite', action='store_true', default=False,
+                    help='Overwrite existing elevations (otherwise will add elevations only where not yet presetn)')
+parser.add_argument('-c', '--calculate', action='store_true', default=False,
+                    help='Calculate elevations (but don\'t change the GPX file')
+parser.add_argument('-f', '--file', default=None, type=str,
+                    help='Output filename')
+parser.add_argument('gpx_files', nargs='*', help='GPX files')
+
+args = parser.parse_args()
+
+geo_elevation_data = mod_srtm.get_data()
+
+def update_point(point, args):
+    if args.calculate:
+        calculated = geo_elevation_data.get_elevation(point.latitude, point.longitude)
+        print '(%s, %s) currently: %s, calculated: %s' % (point.latitude, point.longitude, point.elevation, calculated)
+    elif args.overwrite or point.elevation == None:
+        calculated = geo_elevation_data.get_elevation(point.latitude, point.longitude)
+        point.elevation = calculated
+        print '(%s, %s) -> %s' % (point.latitude, point.longitude, calculated)
+    else:
+        print '(%s, %s) left with %s' % (point.latitude, point.longitude, point.elevation)
+
+def update_gpx(gpx):
+    for route in gpx.routes:
+        for point in route.points:
+            update_point(point, args)
+
+    for track in gpx.tracks:
+        for segment in track.segments:
+            for point in segment.points:
+                update_point(point, args)
+
+
+for gpx_file in args.gpx_files:
+    with open(gpx_file) as f:
+        gpx = mod_gpxpy.parse(f.read())
+        update_gpx(gpx)
+
+        file_name = args.file
+        if not file_name:
+            if '.gpx' in gpx_file.lower():
+                file_name = gpx_file.lower().replace('.gpx', '_with_elevations.gpx')
+            else:
+                file_name = 'gpx_with_elevations.gpx'
+
+        with open(file_name, 'w') as output_f:
+            output_f.write(gpx.to_xml())
+
+            print
+            print 'Written to %s' % file_name
