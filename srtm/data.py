@@ -140,7 +140,8 @@ class GeoElevationData:
         else:
             east_west = 'W'
 
-        file_name = north_south + str(int(mod_math.floor(latitude))).zfill(2) + east_west + str(int(mod_math.floor(longitude))).zfill(3) + '.hgt'
+        file_name = '%s%s%s%s.hgt' % (north_south, str(int(abs(mod_math.floor(latitude)))).zfill(2), 
+                                      east_west, str(int(abs(mod_math.floor(longitude)))).zfill(3))
 
         if not self.srtm1_files.has_key(file_name) and not self.srtm3_files.has_key(file_name):
             mod_logging.debug('No file found for ({0}, {1}) (file_name: {2})'.format(latitude, longitude, file_name))
