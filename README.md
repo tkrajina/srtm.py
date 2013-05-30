@@ -26,7 +26,7 @@ On every elevation requested the library will:
 
 That's why the first run of your application will always take a few seconds.
 
-### Exmple images
+### Example images
 
 Istra and Trieste:
 
