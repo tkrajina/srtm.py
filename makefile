@@ -9,7 +9,7 @@ check-all-commited:
 	    git status; \
 	    exit 1; \
 	fi
-register: check-all-commited
+pypi-upload: check-all-commited
 	python setup.py register
 	python setup.py sdist upload
 create-sample-images:
