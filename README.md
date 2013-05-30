@@ -20,6 +20,24 @@ You can create elevation images with:
 
 image.show()
 
+### Exmple images
+
+Istra and Trieste:
+
+![Istra](http://tkrajina.github.io/srtm.py/istra.png)
+
+Rio de Janeiro:
+
+![Rio](http://tkrajina.github.io/srtm.py/rio.png)
+
+Miami and florida:
+
+![Miami](http://tkrajina.github.io/srtm.py/miami.png)
+
+Sidney:
+
+![Sidney](http://tkrajina.github.io/srtm.py/sidney.png)
+
 ## gpxelevations
 
 **TODO**
