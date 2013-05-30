@@ -18,7 +18,13 @@ You can create elevation images with:
     # the image s a standard PIL object, you can save or show it:
     image.show()
 
-image.show()
+On every elevation requested the library will:
+
+ * Check if the SRTM file is stored locally
+ * If not -- download it from NASA servers
+ * Parse elevations from it
+
+That's why the first run of your application will always take a few seconds.
 
 ### Exmple images
 
