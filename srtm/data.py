@@ -28,8 +28,8 @@ import os.path as mod_path
 import zipfile as mod_zipfile
 import cStringIO as mod_cstringio
 
-
-import retriever as mod_retriever
+from . import utils as mod_utils
+from . import retriever as mod_retriever
 
 class GeoElevationData:
     """
@@ -129,7 +129,6 @@ class GeoElevationData:
 
     def get_file_name(self, latitude, longitude):
         # Decide the file name:
-
         if latitude >= 0:
             north_south = 'N'
         else:
@@ -148,6 +147,52 @@ class GeoElevationData:
             return None
 
         return file_name
+
+    def get_image(self, size, latitude_interval, longitude_interval, max_elevation, 
+                  unknown_color = (255, 255, 255, 255), zero_color = (0, 0, 255, 255),
+                  min_color = (0, 0, 0, 255), max_color = (0, 255, 0, 255)):
+        """
+        Returns a PIL image.
+        """
+        import Image as mod_image
+        import ImageDraw as mod_imagedraw
+
+        if not size or len(size) != 2:
+            raise Exception('Invalid size %s' % size)
+        if not latitude_interval or len(latitude_interval) != 2:
+            raise Exception('Invalid latitude interval %s' % latitude_interval)
+        if not longitude_interval or len(longitude_interval) != 2:
+            raise Exception('Invalid longitude interval %s' % longitude_interval)
+
+        width, height = size
+        width, height = int(width), int(height)
+
+        latitude_from,  latitude_to  = latitude_interval
+        longitude_from, longitude_to = longitude_interval
+
+        image = mod_image.new('RGBA', (width, height),
+                              (255, 255, 255, 255))
+        draw = mod_imagedraw.Draw(image)
+
+        for row in range(height):
+            for column in range(width):
+                latitude  = latitude_from  + float(row) / height * (latitude_to  - latitude_from)
+                longitude = longitude_from + float(column) / height * (longitude_to - longitude_from)
+                elevation = self.get_elevation(latitude, longitude)
+
+                if elevation == None:
+                    color = unknown_color
+                else:
+                    elevation_coef = elevation / float(max_elevation)
+                    if elevation_coef < 0: elevation_coef = 0
+                    if elevation_coef > 1: elevation_coef = 1
+                    color = mod_utils.get_color_between(min_color, max_color, elevation_coef)
+                    if elevation <= 0:
+                        color = zero_color
+
+                draw.point((column, height - row), color)
+
+        return image
 
 class GeoElevationFile:
     """ Contains data from a single Shuttle elevation file. """
