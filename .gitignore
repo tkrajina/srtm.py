@@ -4,6 +4,7 @@
 *.pyc
 *.swp
 *.swo
+*.png
 tags
 MANIFEST
 dist/
