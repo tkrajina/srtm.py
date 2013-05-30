@@ -16,7 +16,7 @@
 
 import pdb
 
-import cPickle  as mod_pickle
+import json     as mod_json
 import os       as mod_os
 import os.path  as mod_path
 
@@ -56,13 +56,13 @@ def get_data(local_srtm_dir=None):
     if not local_srtm_dir:
         raise Error('Please specify a path where to store files')
 
-    files_list_file_name = '{0}/list'.format(local_srtm_dir)
+    files_list_file_name = '{0}/list.json'.format(local_srtm_dir)
     try:
         f = open(files_list_file_name, 'r')
         contents = f.read()
         f.close()
 
-        urls = mod_pickle.loads(contents)
+        urls = mod_json.loads(contents)
 
         srtm1_files = urls['srtm1']
         srtm3_files = urls['srtm3']
@@ -71,7 +71,7 @@ def get_data(local_srtm_dir=None):
         srtm3_files = mod_retriever.retrieve_all_files_urls(SRTM3_URL)
 
         f = open(files_list_file_name, 'w')
-        f.write(mod_pickle.dumps({'srtm1': srtm1_files, 'srtm3': srtm3_files}))
+        f.write(mod_json.dumps({'srtm1': srtm1_files, 'srtm3': srtm3_files}, sort_keys=True, indent=4))
         f.close()
 
     assert srtm1_files
