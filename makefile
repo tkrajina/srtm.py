@@ -18,5 +18,6 @@ upload-sample-images-to-github-pages: check-all-commited create-sample-images
 	git branch -D gh-pages
 	git checkout -b gh-pages
 	git add -f *.png
+	git commit -m "Images"
 	git push origin gh-pages
 	git checkout master
