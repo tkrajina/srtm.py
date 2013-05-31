@@ -14,6 +14,8 @@ parser = mod_argparse.ArgumentParser(
 
 parser.add_argument('-o', '--overwrite', action='store_true', default=False,
                     help='Overwrite existing elevations (otherwise will add elevations only where not yet presetn)')
+parser.add_argument('-p', '--approximate', action='store_true', default=False,
+                    help='Overwrite existing elevations (otherwise will add elevations only where not yet presetn)')
 parser.add_argument('-c', '--calculate', action='store_true', default=False,
                     help='Calculate elevations (but don\'t change the GPX file')
 parser.add_argument('-f', '--file', default=None, type=str,
@@ -32,12 +34,12 @@ geo_elevation_data = mod_srtm.get_data()
 
 def update_point(point, args):
     if args.calculate:
-        calculated = geo_elevation_data.get_elevation(point.latitude, point.longitude)
+        calculated = geo_elevation_data.get_elevation(point.latitude, point.longitude, approximate=args.approximate)
         print '(%s, %s) currently: %s, calculated: %s' % (point.latitude, point.longitude, point.elevation, calculated)
     elif args.overwrite or point.elevation == None:
-        calculated = geo_elevation_data.get_elevation(point.latitude, point.longitude)
+        calculated = geo_elevation_data.get_elevation(point.latitude, point.longitude, approximate=args.approximate)
+        print '(%s, %s) was %s changed to %s' % (point.latitude, point.longitude, point.elevation, calculated)
         point.elevation = calculated
-        print '(%s, %s) -> %s' % (point.latitude, point.longitude, calculated)
     else:
         print '(%s, %s) left with %s' % (point.latitude, point.longitude, point.elevation)
 
