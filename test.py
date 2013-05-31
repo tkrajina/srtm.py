@@ -82,3 +82,8 @@ class Tests(mod_unittest.TestCase):
         except Exception as e:
             message = str(e)
             self.assertEquals('Invalid longitude 1 for file N47E013.hgt', message)
+
+    def test_invalit_file(self):
+        geo_elevation_data = mod_srtm.get_data()
+        geo_file = geo_elevation_data.get_file(-47.0, -13.99)
+        self.assertEquals(None, geo_file)
