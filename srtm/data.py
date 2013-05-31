@@ -220,8 +220,6 @@ class GeoElevationFile:
         self.square_side = int(square_side)
 
     def get_elevation(self, latitude, longitude):
-        start_latitude, start_longitude = self.latitude, self.longitude
-
         if not (self.latitude <= latitude < self.latitude + 1):
             raise Exception('Invalid latitude %s for file %s' % (latitude, self.file_name))
         if not (self.longitude <= longitude < self.longitude + 1):
@@ -229,8 +227,9 @@ class GeoElevationFile:
 
         points = self.square_side ** 2
 
-        row = int(mod_math.floor((start_latitude + 1 - latitude) * float(self.square_side - 1)))
-        column = int(mod_math.floor((longitude - start_longitude) * float(self.square_side - 1)))
+        pdb.set_trace()
+        row = int(mod_math.floor((self.latitude + 1 - latitude) * float(self.square_side - 1)))
+        column = int(mod_math.floor((longitude - self.longitude) * float(self.square_side - 1)))
 
         return self.get_elevation_from_row_and_column(row, column)
 

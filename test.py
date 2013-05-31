@@ -87,3 +87,13 @@ class Tests(mod_unittest.TestCase):
         geo_elevation_data = mod_srtm.get_data()
         geo_file = geo_elevation_data.get_file(-47.0, -13.99)
         self.assertEquals(None, geo_file)
+
+    def test_coordinates_in_file(self):
+        geo_elevation_data = mod_srtm.get_data()
+        geo_file = geo_elevation_data.get_file(47.0, 13.99)
+
+        print 'file:', geo_file
+
+        self.assertEquals(geo_file.get_elevation(47, 13),
+                          geo_file.get_elevation(47, 13))
+
