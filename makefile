@@ -1,7 +1,7 @@
 GIT_PORCELAIN_STATUS=$(shell git status --porcelain)
 
-ok:
-	echo 'OK'
+test:
+	python -m unittest test
 check-all-commited:
 	if [ -n "$(GIT_PORCELAIN_STATUS)" ]; \
 	then \
