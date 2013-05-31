@@ -6,9 +6,14 @@ See: [http://www2.jpl.nasa.gov/srtm/](http://www2.jpl.nasa.gov/srtm/).
 
 ## Usage:
 
-    >>> import srtm
-    >>> elevation_data = srtm.get_data()
-    >>> print 'CGN Airport elevation (meters):', elevation_data.get_elevation(50.8682, 7.1377)
+    import srtm
+    elevation_data = srtm.get_data()
+    print 'CGN Airport elevation (meters):', elevation_data.get_elevation(50.8682, 7.1377)
+
+With get\_elevation() an elevation of the the nearest location found in the SRTM data will be given.
+If you need an approximation based on nearby locations, you can use:
+
+    elevation_data.get_elevation(50.8682, 7.1377, approximate=True)
 
 You can create elevation images with:
 

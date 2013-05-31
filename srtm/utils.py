@@ -14,6 +14,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import math as mod_math
+
+ONE_DEGREE = 1000. * 10000.8 / 90.
+
+def distance(latitude_1, longitude_1, latitude_2, longitude_2):
+    """
+    Distance between two points.
+    """
+
+    coef = mod_math.cos(latitude_1 / 180. * mod_math.pi)
+    x = latitude_1 - latitude_2
+    y = (longitude_1 - longitude_2) * coef
+
+    return mod_math.sqrt(x * x + y * y) * ONE_DEGREE
+
 def get_color_between(color1, color2, i):
     """ i is a number between 0 and 1, if 0 then color1, if 1 color2, ... """
     if i <= 0:

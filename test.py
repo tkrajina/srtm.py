@@ -83,7 +83,7 @@ class Tests(mod_unittest.TestCase):
             message = str(e)
             self.assertEquals('Invalid longitude 1 for file N47E013.hgt', message)
 
-    def test_invalit_file(self):
+    def test_invalid_file(self):
         geo_elevation_data = mod_srtm.get_data()
         geo_file = geo_elevation_data.get_file(-47.0, -13.99)
         self.assertEquals(None, geo_file)
@@ -97,3 +97,34 @@ class Tests(mod_unittest.TestCase):
         self.assertEquals(geo_file.get_elevation(47, 13),
                           geo_file.get_elevation(47, 13))
 
+    def test_without_approximation(self):
+        geo_elevation_data = mod_srtm.get_data()
+
+        self.assertEquals(geo_elevation_data.get_elevation(47.1, 13.1, approximate=False),
+                          geo_elevation_data.get_elevation(47.1, 13.1))
+
+        # SRTM elevations are always integers:
+        elevation = geo_elevation_data.get_elevation(47.1, 13.1)
+        self.assertTrue(int(elevation) == elevation)
+
+    def test_with_approximation(self):
+        geo_elevation_data = mod_srtm.get_data()
+
+        self.assertNotEquals(geo_elevation_data.get_elevation(47.1, 13.1, approximate=True),
+                             geo_elevation_data.get_elevation(47.1, 13.1))
+
+        # When approximating a random point, it probably won't be a integer:
+        elevation = geo_elevation_data.get_elevation(47.1, 13.1, approximate=True)
+        self.assertTrue(int(elevation) != elevation)
+
+    def test_approximation(self):
+        # TODO(TK) Better tests for approximation here:
+        geo_elevation_data = mod_srtm.get_data()
+        elevation_without_approximation = geo_elevation_data.get_elevation(47, 13)
+        elevation_with_approximation = geo_elevation_data.get_elevation(47, 13, approximate=True)
+
+        print elevation_without_approximation
+        print elevation_with_approximation
+
+        self.assertNotEquals(elevation_with_approximation, elevation_without_approximation)
+        self.assertTrue(abs(elevation_with_approximation - elevation_without_approximation) < 30)

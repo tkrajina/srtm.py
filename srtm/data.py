@@ -52,7 +52,7 @@ class GeoElevationData:
 
         self.files = {}
 
-    def get_elevation(self, latitude, longitude):
+    def get_elevation(self, latitude, longitude, approximate=None):
         geo_elevation_file = self.get_file(float(latitude), float(longitude))
 
         mod_logging.debug('File for ({0}, {1}) -> {2}'.format(
@@ -61,7 +61,10 @@ class GeoElevationData:
         if not geo_elevation_file:
             return None
 
-        return geo_elevation_file.get_elevation(float(latitude), float(longitude))
+        return geo_elevation_file.get_elevation(
+                float(latitude),
+                float(longitude),
+                approximate)
 
     def get_file(self, latitude, longitude):
         """
@@ -79,7 +82,7 @@ class GeoElevationData:
             if not data:
                 return None
 
-            result = GeoElevationFile(file_name, data)
+            result = GeoElevationFile(file_name, data, self)
             self.files[file_name] = result
             return result
 
@@ -195,7 +198,12 @@ class GeoElevationData:
         return image
 
 class GeoElevationFile:
-    """ Contains data from a single Shuttle elevation file. """
+    """
+    Contains data from a single Shuttle elevation file.
+
+    This class hould not be instantiated without its GeoElevationData because 
+    it may need elevations from nearby files.
+    """
 
     file_name = None
     url = None
@@ -205,9 +213,10 @@ class GeoElevationFile:
 
     data = None
 
-    def __init__(self, file_name, data):
+    def __init__(self, file_name, data, geo_elevation_data):
         """ Data is a raw file contents of the file. """
 
+        self.geo_elevation_data = geo_elevation_data
         self.file_name = file_name
 
         self.parse_file_name_starting_position()
@@ -219,7 +228,11 @@ class GeoElevationFile:
 
         self.square_side = int(square_side)
 
-    def get_elevation(self, latitude, longitude):
+    def get_elevation(self, latitude, longitude, approximate=None):
+        """
+        If approximate is True then only the points from SRTM grid will be 
+        used, otherwise a basic aproximation of nearby points will be calculated.
+        """
         if not (self.latitude <= latitude < self.latitude + 1):
             raise Exception('Invalid latitude %s for file %s' % (latitude, self.file_name))
         if not (self.longitude <= longitude < self.longitude + 1):
@@ -227,11 +240,54 @@ class GeoElevationFile:
 
         points = self.square_side ** 2
 
-        pdb.set_trace()
-        row = int(mod_math.floor((self.latitude + 1 - latitude) * float(self.square_side - 1)))
-        column = int(mod_math.floor((longitude - self.longitude) * float(self.square_side - 1)))
+        row = mod_math.floor((self.latitude + 1 - latitude) * float(self.square_side - 1))
+        column = mod_math.floor((longitude - self.longitude) * float(self.square_side - 1))
 
-        return self.get_elevation_from_row_and_column(row, column)
+        if approximate:
+            return self.approximation(latitude, longitude)
+        else:
+            return self.get_elevation_from_row_and_column(int(row), int(column))
+    
+    def approximation(self, latitude, longitude):
+        """
+        Dummy approximation with nearest points. The nearest the neighbour the 
+        more important will be its elevation.
+        """
+        d = 1. / self.square_side
+        d_meters = d * mod_utils.ONE_DEGREE
+
+        # Since the less the distance => the more important should be the 
+        # distance of the point, we'll use d-distance as importance coef 
+        # here:
+        importance_1 = d_meters - mod_utils.distance(latitude + d, longitude, latitude, longitude)
+        elevation_1  = self.geo_elevation_data.get_elevation(latitude + d, longitude, approximate=False)
+
+        importance_2 = d_meters - mod_utils.distance(latitude - d, longitude, latitude, longitude)
+        elevation_2  = self.geo_elevation_data.get_elevation(latitude - d, longitude, approximate=False)
+
+        importance_3 = d_meters - mod_utils.distance(latitude, longitude + d, latitude, longitude)
+        elevation_3  = self.geo_elevation_data.get_elevation(latitude, longitude + d, approximate=False)
+
+        importance_4 = d_meters - mod_utils.distance(latitude, longitude - d, latitude, longitude)
+        elevation_4  = self.geo_elevation_data.get_elevation(latitude, longitude - d, approximate=False)
+        # TODO(TK) Check if coordinates inside the same file, and only the decide if to xall 
+        # self.geo_elevation_data.get_elevation or just self.get_elevation
+
+        # Normalize importance:
+        sum_importances = float(importance_1 + importance_2 + importance_3 + importance_4)
+
+        # Check normallization:
+        assert abs(importance_1 / sum_importances + \
+                   importance_2 / sum_importances + \
+                   importance_3 / sum_importances + \
+                   importance_4 / sum_importances - 1 ) < 0.000001
+
+        result = importance_1 / sum_importances * elevation_1 + \
+               importance_2 / sum_importances * elevation_2 + \
+               importance_3 / sum_importances * elevation_3 + \
+               importance_4 / sum_importances * elevation_4
+
+        return result
 
     def get_elevation_from_row_and_column(self, row, column):
         i = row * (self.square_side) + column
