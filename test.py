@@ -66,3 +66,19 @@ class Tests(mod_unittest.TestCase):
                           geo_elevation_data.get_file(47.0, -13.0))
         self.assertEquals(geo_elevation_data.get_file(47.99, -13.99),
                           geo_elevation_data.get_file(47.0, -13.0))
+
+    def test_invalit_coordinates_for_file(self):
+        geo_elevation_data = mod_srtm.get_data()
+        geo_file = geo_elevation_data.get_file(47.0, 13.99)
+
+        try:
+            self.assertFalse(geo_file.get_elevation(1, 1))
+        except Exception as e:
+            message = str(e)
+            self.assertEquals('Invalid latitude 1 for file N47E013.hgt', message)
+
+        try:
+            self.assertFalse(geo_file.get_elevation(47, 1))
+        except Exception as e:
+            message = str(e)
+            self.assertEquals('Invalid longitude 1 for file N47E013.hgt', message)

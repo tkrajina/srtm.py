@@ -222,6 +222,11 @@ class GeoElevationFile:
     def get_elevation(self, latitude, longitude):
         start_latitude, start_longitude = self.latitude, self.longitude
 
+        if not (self.latitude <= latitude < self.latitude + 1):
+            raise Exception('Invalid latitude %s for file %s' % (latitude, self.file_name))
+        if not (self.longitude <= longitude < self.longitude + 1):
+            raise Exception('Invalid longitude %s for file %s' % (longitude, self.file_name))
+
         points = self.square_side ** 2
 
         row = int(mod_math.floor((start_latitude + 1 - latitude) * float(self.square_side - 1)))
@@ -231,6 +236,7 @@ class GeoElevationFile:
 
     def get_elevation_from_row_and_column(self, row, column):
         i = row * (self.square_side) + column
+        assert i < len(self.data) - 1
 
         mod_logging.debug('{0}, {1} -> {2}'.format(row, column, i))
 
