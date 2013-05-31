@@ -3,6 +3,7 @@
 
 import pdb
 
+import logging as mod_logging
 import argparse as mod_argparse
 import gpxpy as mod_gpxpy
 
@@ -17,9 +18,15 @@ parser.add_argument('-c', '--calculate', action='store_true', default=False,
                     help='Calculate elevations (but don\'t change the GPX file')
 parser.add_argument('-f', '--file', default=None, type=str,
                     help='Output filename')
+parser.add_argument('-v', '--verbose', action='store_true', default=False,
+                    help='Verbose output')
 parser.add_argument('gpx_files', nargs='*', help='GPX files')
 
 args = parser.parse_args()
+
+if args.verbose:
+    mod_logging.basicConfig(level=mod_logging.DEBUG,
+                            format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 
 geo_elevation_data = mod_srtm.get_data()
 
