@@ -14,7 +14,7 @@ import srtm           as mod_srtm
 mod_logging.basicConfig(level=mod_logging.DEBUG,
                         format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 
-class LxmlTests(mod_unittest.TestCase):
+class Tests(mod_unittest.TestCase):
 
     def test_random_points(self):
         geo_elevation_data = mod_srtm.get_data()
@@ -44,3 +44,25 @@ class LxmlTests(mod_unittest.TestCase):
     def test_point_without_file(self):
         geo_elevation_data = mod_srtm.get_data()
         print geo_elevation_data.get_elevation(0, 0)
+
+    def test_files_equality(self):
+        geo_elevation_data = mod_srtm.get_data()
+        self.assertEquals(geo_elevation_data.get_file(47.0, 13.99),
+                          geo_elevation_data.get_file(47.0, 13.0))
+        self.assertEquals(geo_elevation_data.get_file(47.99, 13.99),
+                          geo_elevation_data.get_file(47.0, 13.0))
+
+        self.assertEquals(geo_elevation_data.get_file(-47.0, 13.99),
+                          geo_elevation_data.get_file(-47.0, 13.0))
+        self.assertEquals(geo_elevation_data.get_file(-47.99, 13.99),
+                          geo_elevation_data.get_file(-47.0, 13.0))
+
+        self.assertEquals(geo_elevation_data.get_file(-47.0, -13.99),
+                          geo_elevation_data.get_file(-47.0, -13.0))
+        self.assertEquals(geo_elevation_data.get_file(-47.99, -13.99),
+                          geo_elevation_data.get_file(-47.0, -13.0))
+
+        self.assertEquals(geo_elevation_data.get_file(47.0, -13.99),
+                          geo_elevation_data.get_file(47.0, -13.0))
+        self.assertEquals(geo_elevation_data.get_file(47.99, -13.99),
+                          geo_elevation_data.get_file(47.0, -13.0))
