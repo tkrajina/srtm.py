@@ -273,6 +273,15 @@ class GeoElevationFile:
         # TODO(TK) Check if coordinates inside the same file, and only the decide if to xall 
         # self.geo_elevation_data.get_elevation or just self.get_elevation
 
+        if elevation_1 == None or elevation_2 == None or elevation_3 == None or elevation_4 == None:
+            elevation = self.get_elevation(latitude, longitude, approximate=False)
+            if not elevation:
+                return None
+            elevation_1 = elevation_1 or elevation
+            elevation_2 = elevation_2 or elevation
+            elevation_3 = elevation_3 or elevation
+            elevation_4 = elevation_4 or elevation
+
         # Normalize importance:
         sum_importances = float(importance_1 + importance_2 + importance_3 + importance_4)
 
