@@ -33,13 +33,11 @@ if args.verbose:
 geo_elevation_data = mod_srtm.get_data()
 
 def update_point(point, args):
-    if args.calculate:
+    if args.calculate or (args.overwrite or point.elevation == None):
         calculated = geo_elevation_data.get_elevation(point.latitude, point.longitude, approximate=args.approximate)
+        if calculated and int(calculated) != calculated:
+            calculated = int(calculated * 10) / 10.
         print '(%s, %s) currently: %s, calculated: %s' % (point.latitude, point.longitude, point.elevation, calculated)
-    elif args.overwrite or point.elevation == None:
-        calculated = geo_elevation_data.get_elevation(point.latitude, point.longitude, approximate=args.approximate)
-        print '(%s, %s) was %s changed to %s' % (point.latitude, point.longitude, point.elevation, calculated)
-        point.elevation = calculated
     else:
         print '(%s, %s) left with %s' % (point.latitude, point.longitude, point.elevation)
 
