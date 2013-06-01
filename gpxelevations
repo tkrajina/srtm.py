@@ -16,6 +16,8 @@ parser.add_argument('-o', '--overwrite', action='store_true', default=False,
                     help='Overwrite existing elevations (otherwise will add elevations only where not yet presetn)')
 parser.add_argument('-p', '--approximate', action='store_true', default=False,
                     help='Overwrite existing elevations (otherwise will add elevations only where not yet presetn)')
+parser.add_argument('-s', '--smooth', action='store_true', default=False,
+                    help='Smooth elevations')
 parser.add_argument('-c', '--calculate', action='store_true', default=False,
                     help='Calculate elevations (but don\'t change the GPX file')
 parser.add_argument('-f', '--file', default=None, type=str,
@@ -56,6 +58,12 @@ for gpx_file in args.gpx_files:
     with open(gpx_file) as f:
         gpx = mod_gpxpy.parse(f.read())
         update_gpx(gpx)
+
+        if args.smooth:
+            print 'Smoothing...'
+            gpx.smooth(vertical=True, horizontal=False)
+            gpx.smooth(vertical=True, horizontal=False)
+            print 'Smoothing... done'
 
         file_name = args.file
         if not file_name:
