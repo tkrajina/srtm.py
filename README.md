@@ -54,7 +54,8 @@ Sidney:
 gpxelevations is a utility commandline tool to add/update elevations in a GPS track file:
 
     $ gpxelevations -h
-    usage: gpxelevations [-h] [-o] [-c] [-f FILE] [gpx_files [gpx_files ...]]
+    usage: gpxelevations [-h] [-o] [-p] [-s] [-c] [-f FILE] [-v]
+                         [gpx_files [gpx_files ...]]
 
     Adds elevation to GPX files
 
@@ -65,8 +66,11 @@ gpxelevations is a utility commandline tool to add/update elevations in a GPS tr
       -h, --help            show this help message and exit
       -o, --overwrite       Overwrite existing elevations (otherwise will add
                             elevations only where not yet presetn)
+      -p, --approximate     Approximate elevations with neighbour point elevations
+      -s, --smooth          Smooth elevations
       -c, --calculate       Calculate elevations (but don't change the GPX file
       -f FILE, --file FILE  Output filename
+      -v, --verbose         Verbose output
 
 ## License
 

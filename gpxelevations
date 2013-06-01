@@ -15,7 +15,7 @@ parser = mod_argparse.ArgumentParser(
 parser.add_argument('-o', '--overwrite', action='store_true', default=False,
                     help='Overwrite existing elevations (otherwise will add elevations only where not yet presetn)')
 parser.add_argument('-p', '--approximate', action='store_true', default=False,
-                    help='Overwrite existing elevations (otherwise will add elevations only where not yet presetn)')
+                    help='Approximate elevations with neighbour point elevations')
 parser.add_argument('-s', '--smooth', action='store_true', default=False,
                     help='Smooth elevations')
 parser.add_argument('-c', '--calculate', action='store_true', default=False,
