@@ -65,7 +65,7 @@ gpxelevations is a utility commandline tool to add/update elevations in a GPS tr
     optional arguments:
       -h, --help            show this help message and exit
       -o, --overwrite       Overwrite existing elevations (otherwise will add
-                            elevations only where not yet presetn)
+                            elevations only where not yet present)
       -p, --approximate     Approximate elevations with neighbour point elevations
       -s, --smooth          Smooth elevations
       -c, --calculate       Calculate elevations (but don't change the GPX file
