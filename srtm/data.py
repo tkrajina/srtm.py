@@ -44,11 +44,14 @@ class GeoElevationData:
     # Lazy loaded files used in current app:
     files = None
 
-    def __init__(self, srtm1_files, srtm3_files, files_directory):
+    def __init__(self, srtm1_files, srtm3_files, files_directory,
+                 reduce_big_files=False):
         self.srtm1_files = srtm1_files
         self.srtm3_files = srtm3_files
         # Place where local files are stored:
         self.files_directory = files_directory
+
+        self.reduce_big_files = reduce_big_files
 
         self.files = {}
 
@@ -124,10 +127,32 @@ class GeoElevationData:
         if not data:
             return None
 
+        if self.reduce_big_files:
+            data = self._reduce_file(data, file_name)
+
         f = open(data_file_name, 'w')
         f.write(data)
         f.close()
 
+        return data
+
+    def _reduce_file(self, data, file_name):
+        if mod_math.sqrt(len(data) / 2) == 3601:
+            mod_logging.info('Reducing file %s' % file_name)
+            reduced_data = mod_cstringio.StringIO()
+            values_written = 0
+            size = len(data)
+            for i in xrange(size / 2):
+                row = i / 3601
+                column = i % 3601
+                if row % 3 == 0 and column % 3 == 0:
+                    reduced_data.write(data[i * 2])
+                    reduced_data.write(data[i * 2 + 1])
+                    values_written += 1
+
+            result = reduced_data.getvalue()
+            assert mod_math.sqrt(len(result) / 2) == 1201
+            return result
         return data
 
     def get_file_name(self, latitude, longitude):
@@ -338,4 +363,3 @@ class GeoElevationFile:
 	
     def __str__(self):
         return '[{0}:{1}]'.format(self.__class__, self.file_name)
-

@@ -39,7 +39,7 @@ def get_default_srtm_dir():
 
     return result
 
-def get_data(local_srtm_dir=None):
+def get_data(local_srtm_dir=None, reduce_big_files=False):
     """
     Get the utility object for querying elevation data.
 
@@ -49,6 +49,11 @@ def get_data(local_srtm_dir=None):
     On first run -- all files url will be stored and for every next elevation 
     query if the SRTM file is not found in local_srtm_dir it will be retrieved 
     and saved.
+
+    If reduce_big_files is True files for north America will be reduced to the 
+    same size as the rest of the world. It may be used to save disk space 
+    (because otherwise the tipical USA file is 25 megabaytes comparet to 2-3 
+    megabytes for the rest).
     """
     if not local_srtm_dir:
         local_srtm_dir = get_default_srtm_dir()
@@ -71,10 +76,12 @@ def get_data(local_srtm_dir=None):
         srtm3_files = mod_retriever.retrieve_all_files_urls(SRTM3_URL)
 
         f = open(files_list_file_name, 'w')
-        f.write(mod_json.dumps({'srtm1': srtm1_files, 'srtm3': srtm3_files}, sort_keys=True, indent=4))
+        f.write(mod_json.dumps({'srtm1': srtm1_files, 'srtm3': srtm3_files},
+                               sort_keys=True, indent=4))
         f.close()
 
     assert srtm1_files
     assert srtm3_files
 
-    return mod_data.GeoElevationData(srtm1_files, srtm3_files, local_srtm_dir)
+    return mod_data.GeoElevationData(srtm1_files, srtm3_files, local_srtm_dir,
+                                     reduce_big_files=reduce_big_files)
