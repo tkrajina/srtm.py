@@ -120,13 +120,11 @@ class GeoElevationData:
             return None
 
         # data is zipped:
-        mod_logging.info('Unzipping {0}'.format(url))
-        mod_logging.info('Unzipped {0}'.format(url))
 
         if self.reduce_big_files:
             data = mod_utils.unzip(data)
             data = self._reduce_file(data, file_name)
-            data = mod_utils.zip(data)
+            data = mod_utils.zip(data, file_name)
 
         with open(data_file_name, 'w') as f:
             if self.leave_zipped:
@@ -134,6 +132,7 @@ class GeoElevationData:
             else:
                 data = mod_utils.unzip(data)
                 f = open(data_file_name, 'w')
+            f.write(data)
 
         return data
 

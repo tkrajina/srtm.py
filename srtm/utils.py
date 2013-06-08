@@ -16,6 +16,7 @@
 
 import pdb
 
+import logging as mod_logging
 import math as mod_math
 import zipfile as mod_zipfile
 import cStringIO as mod_cstringio
@@ -43,16 +44,21 @@ def get_color_between(color1, color2, i):
             int(color1[1] + (color2[1] - color1[1]) * i),
             int(color1[2] + (color2[2] - color1[2]) * i))
 
-def zip(contents):
-    pdb.set_trace()
+def zip(contents, file_name):
+    mod_logging.debug('Zipping %s bytes' % len(contents))
     result = mod_cstringio.StringIO()
     zip_file = mod_zipfile.ZipFile(result, 'w', mod_zipfile.ZIP_DEFLATED, False)
-    zip_file.writestr('archive.zip', contents)
+    zip_file.writestr(file_name, contents)
+    zip_file.close()
     result.seek(0)
+    mod_logging.debug('Zipped')
     return result.read()
 
 def unzip(contents):
+    mod_logging.debug('Unzipping %s bytes' % len(contents))
     zip_file = mod_zipfile.ZipFile(mod_cstringio.StringIO(contents))
     zip_info_list = zip_file.infolist()
     zip_info = zip_info_list[0]
-    return zip_file.open(zip_info).read()
+    result = zip_file.open(zip_info).read()
+    mod_logging.debug('Unzipped')
+    return result
