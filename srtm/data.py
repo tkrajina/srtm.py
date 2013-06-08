@@ -25,7 +25,6 @@ import math as mod_math
 import re as mod_re
 import urllib as mod_urllib
 import os.path as mod_path
-import zipfile as mod_zipfile
 import cStringIO as mod_cstringio
 
 from . import utils as mod_utils
@@ -45,13 +44,14 @@ class GeoElevationData:
     files = None
 
     def __init__(self, srtm1_files, srtm3_files, files_directory,
-                 reduce_big_files=False):
+                 reduce_big_files=False, leave_zipped=False):
         self.srtm1_files = srtm1_files
         self.srtm3_files = srtm3_files
         # Place where local files are stored:
         self.files_directory = files_directory
 
         self.reduce_big_files = reduce_big_files
+        self.leave_zipped = leave_zipped
 
         self.files = {}
 
@@ -116,23 +116,24 @@ class GeoElevationData:
         mod_logging.info('Retrieved {0}'.format(url))
         f.close()
 
-        # data is zipped:
-        mod_logging.info('Unzipping {0}'.format(url))
-        zip_file = mod_zipfile.ZipFile(mod_cstringio.StringIO(data))
-        zip_info_list = zip_file.infolist()
-        zip_info = zip_info_list[0]
-        data = zip_file.open(zip_info).read()
-        mod_logging.info('Unzipped {0}'.format(url))
-
         if not data:
             return None
 
-        if self.reduce_big_files:
-            data = self._reduce_file(data, file_name)
+        # data is zipped:
+        mod_logging.info('Unzipping {0}'.format(url))
+        mod_logging.info('Unzipped {0}'.format(url))
 
-        f = open(data_file_name, 'w')
-        f.write(data)
-        f.close()
+        if self.reduce_big_files:
+            data = mod_utils.unzip(data)
+            data = self._reduce_file(data, file_name)
+            data = mod_utils.zip(data)
+
+        with open(data_file_name, 'w') as f:
+            if self.leave_zipped:
+                f = open(data_file_name + '.zip', 'w')
+            else:
+                data = mod_utils.unzip(data)
+                f = open(data_file_name, 'w')
 
         return data
 

@@ -39,7 +39,7 @@ def get_default_srtm_dir():
 
     return result
 
-def get_data(local_srtm_dir=None, reduce_big_files=False):
+def get_data(local_srtm_dir=None, reduce_big_files=False, leave_zipped=False):
     """
     Get the utility object for querying elevation data.
 
@@ -54,6 +54,11 @@ def get_data(local_srtm_dir=None, reduce_big_files=False):
     same size as the rest of the world. It may be used to save disk space 
     (because otherwise the tipical USA file is 25 megabaytes comparet to 2-3 
     megabytes for the rest).
+
+    If leave_zipped is True then files will be stored locally as compressed 
+    zip files. That means less disk space but more computing space for every 
+    file loaded. Note that if you leave this to True and don't reduce big 
+    files -- unzipping them on runtime will be slow.
     """
     if not local_srtm_dir:
         local_srtm_dir = get_default_srtm_dir()
@@ -84,4 +89,5 @@ def get_data(local_srtm_dir=None, reduce_big_files=False):
     assert srtm3_files
 
     return mod_data.GeoElevationData(srtm1_files, srtm3_files, local_srtm_dir,
-                                     reduce_big_files=reduce_big_files)
+                                     reduce_big_files=reduce_big_files,
+                                     leave_zipped=leave_zipped)

@@ -14,7 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import pdb
+
 import math as mod_math
+import zipfile as mod_zipfile
+import cStringIO as mod_cstringio
 
 ONE_DEGREE = 1000. * 10000.8 / 90.
 
@@ -38,3 +42,17 @@ def get_color_between(color1, color2, i):
     return (int(color1[0] + (color2[0] - color1[0]) * i),
             int(color1[1] + (color2[1] - color1[1]) * i),
             int(color1[2] + (color2[2] - color1[2]) * i))
+
+def zip(contents):
+    pdb.set_trace()
+    result = mod_cstringio.StringIO()
+    zip_file = mod_zipfile.ZipFile(result, 'w', mod_zipfile.ZIP_DEFLATED, False)
+    zip_file.writestr('archive.zip', contents)
+    result.seek(0)
+    return result.read()
+
+def unzip(contents):
+    zip_file = mod_zipfile.ZipFile(mod_cstringio.StringIO(contents))
+    zip_info_list = zip_file.infolist()
+    zip_info = zip_info_list[0]
+    return zip_file.open(zip_info).read()
