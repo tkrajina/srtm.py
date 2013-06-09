@@ -21,5 +21,7 @@ upload-sample-images-to-github-pages: check-all-commited create-sample-images
 	git commit -m "Images"
 	git push origin gh-pages
 	git checkout master
+reload-urls:
+	python reload_srtm_file_list.py
 ctags:
 	ctags -R . /usr/lib/python2.7/

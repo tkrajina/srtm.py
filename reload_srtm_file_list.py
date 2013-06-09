@@ -21,7 +21,11 @@ import re             as mod_re
 import pickle         as mod_pickle
 import os.path        as mod_path
 
-import data           as mod_data
+mod_logging.basicConfig(level=mod_logging.DEBUG,
+                        format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+
+SRTM1_URL = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM1/'
+SRTM3_URL = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/'
 
 def retrieve_all_files_urls(url):
     mod_logging.info('Retrieving {0}'.format(url))
@@ -58,9 +62,19 @@ def get_files(url):
 
     return result
 
-if __name__ == '__main__':
-    latitude = 45.
-    longitude = 45.
+srtm1_files = retrieve_all_files_urls(SRTM1_URL)
+srtm3_files = retrieve_all_files_urls(SRTM3_URL)
 
-    print get_geo_elevation_data()
+file_name = 'srtm/urls.py'
+with open(file_name, 'w') as f:
+    f.write('URLS = { \'srtm1\': {}, \'srtm3\': {} }\n')
+    keys = srtm1_files.keys()
+    keys.sort()
+    for key in keys:
+        f.write('URLS[\'srtm1\'][\'%s\'] = \'%s\'\n' % (key, srtm1_files[key]))
+    keys = srtm3_files.keys()
+    keys.sort()
+    for key in keys:
+        f.write('URLS[\'srtm3\'][\'%s\'] = \'%s\'\n' % (key, srtm3_files[key]))
 
+print 'Saved to %s' % file_name

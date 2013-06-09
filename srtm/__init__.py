@@ -22,9 +22,7 @@ import os.path  as mod_path
 
 from . import data      as mod_data
 from . import retriever as mod_retriever
-
-SRTM1_URL = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM1/'
-SRTM3_URL = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/'
+from . import urls      as mod_urls
 
 def get_default_srtm_dir():
     """ The default path to store files. """
@@ -66,24 +64,8 @@ def get_data(local_srtm_dir=None, reduce_big_files=False, leave_zipped=False):
     if not local_srtm_dir:
         raise Error('Please specify a path where to store files')
 
-    files_list_file_name = '{0}/list.json'.format(local_srtm_dir)
-    try:
-        f = open(files_list_file_name, 'r')
-        contents = f.read()
-        f.close()
-
-        urls = mod_json.loads(contents)
-
-        srtm1_files = urls['srtm1']
-        srtm3_files = urls['srtm3']
-    except:
-        srtm1_files = mod_retriever.retrieve_all_files_urls(SRTM1_URL)
-        srtm3_files = mod_retriever.retrieve_all_files_urls(SRTM3_URL)
-
-        f = open(files_list_file_name, 'w')
-        f.write(mod_json.dumps({'srtm1': srtm1_files, 'srtm3': srtm3_files},
-                               sort_keys=True, indent=4))
-        f.close()
+    srtm1_files = mod_urls.URLS['srtm1']
+    srtm3_files = mod_urls.URLS['srtm3']
 
     assert srtm1_files
     assert srtm3_files
