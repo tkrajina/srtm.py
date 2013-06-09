@@ -43,15 +43,15 @@ class GeoElevationData:
     # Lazy loaded files used in current app:
     files = None
 
-    def __init__(self, srtm1_files, srtm3_files, files_directory,
-                 reduce_big_files=False, leave_zipped=False):
+    def __init__(self, srtm1_files, srtm3_files, reduce_big_files=False,
+                 leave_zipped=False, file_handler=None):
         self.srtm1_files = srtm1_files
         self.srtm3_files = srtm3_files
-        # Place where local files are stored:
-        self.files_directory = files_directory
 
         self.reduce_big_files = reduce_big_files
         self.leave_zipped = leave_zipped
+
+        self.file_handler = file_handler if file_handler else mod_utils.FileHandler()
 
         self.files = {}
 
@@ -90,16 +90,14 @@ class GeoElevationData:
             return result
 
     def retrieve_or_load_file_data(self, file_name):
-        data_file_name = '{0}/{1}'.format(self.files_directory, file_name)
-        zip_data_file_name = '{0}/{1}.zip'.format(self.files_directory, file_name)
+        data_file_name = file_name
+        zip_data_file_name = '{0}.zip'.format(file_name)
 
         if mod_path.exists(data_file_name):
-            with open(data_file_name) as f:
-                return f.read()
+            return self.file_handler.read(data_file_name)
         elif mod_path.exists(zip_data_file_name):
-            with open(zip_data_file_name) as f:
-                data = f.read()
-                return mod_utils.unzip(data)
+            data = self.file_handler.read(zip_data_file_name)
+            return mod_utils.unzip(data)
 
         url = None
 
@@ -129,13 +127,11 @@ class GeoElevationData:
             data = mod_utils.zip(data, file_name)
 
         if self.leave_zipped:
-            with open(data_file_name + '.zip', 'w') as f:
-                f.write(data)
-                data = mod_utils.unzip(data)
+            self.file_handler.write(data_file_name + '.zip', data)
+            data = mod_utils.unzip(data)
         else:
-            with open(data_file_name, 'w') as f:
-                data = mod_utils.unzip(data)
-                f.write(data)
+            data = mod_utils.unzip(data)
+            self.file_handler.write(data_file_name, data)
 
         return data
 
