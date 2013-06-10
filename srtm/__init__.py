@@ -30,7 +30,7 @@ SRTM3_URL = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/'
 package_location = mod_data.__file__[: mod_data.__file__.rfind(mod_path.sep)]
 DEFAULT_LIST_JSON = package_location + mod_os.sep + 'list.json'
 
-def get_data(reduce_big_files=False, leave_zipped=False, file_handler=None,
+def get_data(srtm1=True, srtm3=True, leave_zipped=False, file_handler=None,
              use_included_urls=True):
     """
     Get the utility object for querying elevation data.
@@ -46,26 +46,29 @@ def get_data(reduce_big_files=False, leave_zipped=False, file_handler=None,
     you need to save them locally) -- change the file_handler. See 
     srtm.utils.FileHandler.
 
-    If reduce_big_files is True files for north America will be reduced to the 
-    same size as the rest of the world. It may be used to save disk space 
-    (because otherwise the tipical USA file is 25 megabaytes comparet to 2-3 
-    megabytes for the rest).
-
     If leave_zipped is True then files will be stored locally as compressed 
     zip files. That means less disk space but more computing space for every 
-    file loaded. Note that if you leave this to True and don't reduce big 
-    files -- unzipping them on runtime will be slow.
+    file loaded. 
     """
     if not file_handler:
         file_handler = FileHandler()
+
+    if not srtm1 and not srtm3:
+        raise Exception('At least one of srtm1 and srtm3 must be True')
 
     srtm1_files, srtm3_files = _get_urls(use_included_urls, file_handler)
 
     assert srtm1_files
     assert srtm3_files
 
+    if not srtm1:
+        srtm1_files = {}
+    if not srtm3:
+        srtm3_files = {}
+
+    assert srtm1_files or srtm3_files
+
     return mod_data.GeoElevationData(srtm1_files, srtm3_files, file_handler=file_handler,
-                                     reduce_big_files=reduce_big_files,
                                      leave_zipped=leave_zipped)
 
 def _get_urls(use_included_urls, file_handler):

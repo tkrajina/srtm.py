@@ -43,12 +43,11 @@ class GeoElevationData:
     # Lazy loaded files used in current app:
     files = None
 
-    def __init__(self, srtm1_files, srtm3_files, reduce_big_files=False,
-                 leave_zipped=False, file_handler=None):
+    def __init__(self, srtm1_files, srtm3_files, leave_zipped=False,
+                 file_handler=None):
         self.srtm1_files = srtm1_files
         self.srtm3_files = srtm3_files
 
-        self.reduce_big_files = reduce_big_files
         self.leave_zipped = leave_zipped
 
         self.file_handler = file_handler if file_handler else mod_utils.FileHandler()
@@ -121,11 +120,6 @@ class GeoElevationData:
 
         # data is zipped:
 
-        if self.reduce_big_files:
-            data = mod_utils.unzip(data)
-            data = self._reduce_file(data, file_name)
-            data = mod_utils.zip(data, file_name)
-
         if self.leave_zipped:
             self.file_handler.write(data_file_name + '.zip', data)
             data = mod_utils.unzip(data)
@@ -133,25 +127,6 @@ class GeoElevationData:
             data = mod_utils.unzip(data)
             self.file_handler.write(data_file_name, data)
 
-        return data
-
-    def _reduce_file(self, data, file_name):
-        if mod_math.sqrt(len(data) / 2) == 3601:
-            mod_logging.info('Reducing file %s' % file_name)
-            reduced_data = mod_cstringio.StringIO()
-            values_written = 0
-            size = len(data)
-            for i in xrange(size / 2):
-                row = i / 3601
-                column = i % 3601
-                if row % 3 == 0 and column % 3 == 0:
-                    reduced_data.write(data[i * 2])
-                    reduced_data.write(data[i * 2 + 1])
-                    values_written += 1
-
-            result = reduced_data.getvalue()
-            assert mod_math.sqrt(len(result) / 2) == 1201
-            return result
         return data
 
     def get_file_name(self, latitude, longitude):
