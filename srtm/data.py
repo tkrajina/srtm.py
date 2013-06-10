@@ -94,8 +94,8 @@ class GeoElevationData:
         zip_data_file_name = '{0}.zip'.format(file_name)
 
         if mod_path.exists(data_file_name):
-            return self.file_handler.read(data_file_name)
-        elif mod_path.exists(zip_data_file_name):
+            return mod_path.file_handler.read(data_file_name)
+        elif self.file_handler.exists(zip_data_file_name):
             data = self.file_handler.read(zip_data_file_name)
             return mod_utils.unzip(data)
 
