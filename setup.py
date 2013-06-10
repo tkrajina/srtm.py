@@ -26,10 +26,11 @@ mod_distutilscore.setup(
     author_email = 'tkrajina@gmail.com',
     url = 'https://github.com/tkrajina/srtm.py',
     packages = ['srtm',],
+    package_data = {'': ['*.json']},
+    include_package_data = True,
     classifiers = [
         "Programming Language :: Python",
         "Programming Language :: Python :: 2",
-#        "Programming Language :: Python :: 3",
     ],
     scripts=['gpxelevations']
 )

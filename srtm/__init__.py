@@ -27,7 +27,11 @@ from . import retriever as mod_retriever
 SRTM1_URL = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM1/'
 SRTM3_URL = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/'
 
-def get_data(reduce_big_files=False, leave_zipped=False, file_handler=None):
+package_location = mod_data.__file__[: mod_data.__file__.rfind(mod_path.sep)]
+DEFAULT_LIST_JSON = package_location + mod_os.sep + 'list.json'
+
+def get_data(reduce_big_files=False, leave_zipped=False, file_handler=None,
+             use_included_urls=True):
     """
     Get the utility object for querying elevation data.
 
@@ -55,20 +59,7 @@ def get_data(reduce_big_files=False, leave_zipped=False, file_handler=None):
     if not file_handler:
         file_handler = FileHandler()
 
-    files_list_file_name = 'list.json'
-    try:
-        contents = file_handler.read(files_list_file_name)
-
-        urls = mod_json.loads(contents)
-
-        srtm1_files = urls['srtm1']
-        srtm3_files = urls['srtm3']
-    except:
-        srtm1_files = mod_retriever.retrieve_all_files_urls(SRTM1_URL)
-        srtm3_files = mod_retriever.retrieve_all_files_urls(SRTM3_URL)
-
-        file_handler.write(files_list_file_name,
-                           mod_json.dumps({'srtm1': srtm1_files, 'srtm3': srtm3_files}, sort_keys=True, indent=4))
+    srtm1_files, srtm3_files = _get_urls(use_included_urls, file_handler)
 
     assert srtm1_files
     assert srtm3_files
@@ -76,6 +67,28 @@ def get_data(reduce_big_files=False, leave_zipped=False, file_handler=None):
     return mod_data.GeoElevationData(srtm1_files, srtm3_files, file_handler=file_handler,
                                      reduce_big_files=reduce_big_files,
                                      leave_zipped=leave_zipped)
+
+def _get_urls(use_included_urls, file_handler):
+    files_list_file_name = 'list.json'
+    try:
+        urls_json = _get_urls_json(use_included_urls, file_handler)
+        return urls_json['srtm1'], urls_json['srtm3']
+    except:
+        srtm1_files = mod_retriever.retrieve_all_files_urls(SRTM1_URL)
+        srtm3_files = mod_retriever.retrieve_all_files_urls(SRTM3_URL)
+
+        file_handler.write(files_list_file_name,
+                           mod_json.dumps({'srtm1': srtm1_files, 'srtm3': srtm3_files}, sort_keys=True, indent=4))
+
+        return srtm1_files, srtm3_files
+
+def _get_urls_json(use_included_urls, file_handler):
+    if use_included_urls:
+        with open(DEFAULT_LIST_JSON, 'r') as f:
+            return mod_json.loads(f.read())
+
+    contents = file_handler.read(files_list_file_name)
+    return mod_json.loads(contents)
 
 class FileHandler:
     """
