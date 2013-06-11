@@ -49,6 +49,15 @@ def get_data(srtm1=True, srtm3=True, leave_zipped=False, file_handler=None,
     If leave_zipped is True then files will be stored locally as compressed 
     zip files. That means less disk space but more computing space for every 
     file loaded. 
+
+    If use_included_urls is True urls to SRTM files included in the library 
+    will be used. Set to false if you need to reload them on first run.
+
+    With srtm1 or srtm3 params you can decide which SRTM format to use. Srtm3 
+    has a resolution of three arc-seconds (cca 90 meters between points). 
+    Srtm1 has a resolution of one arc-second (cca 30 meters). Srtm1 is 
+    available only for the United states. If both srtm1 ans srtm2 are True and 
+    both files are present for a location -- the srtm1 will be used.
     """
     if not file_handler:
         file_handler = FileHandler()
