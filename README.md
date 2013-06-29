@@ -4,6 +4,8 @@ SRTM.py is a python parser for the Shuttle Radar Topography Mission elevation da
 
 See: [http://www2.jpl.nasa.gov/srtm/](http://www2.jpl.nasa.gov/srtm/).
 
+You can see SRTM.py in action on [Trackprofiler (online GPS track editor and organizer)](http://www.trackprofiler.com).
+
 ## Usage:
 
     import srtm
