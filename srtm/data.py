@@ -92,8 +92,8 @@ class GeoElevationData:
         data_file_name = file_name
         zip_data_file_name = '{0}.zip'.format(file_name)
 
-        if mod_path.exists(data_file_name):
-            return mod_path.file_handler.read(data_file_name)
+        if self.file_handler.exists(data_file_name):
+            return self.file_handler.read(data_file_name)
         elif self.file_handler.exists(zip_data_file_name):
             data = self.file_handler.read(zip_data_file_name)
             return mod_utils.unzip(data)
@@ -259,22 +259,39 @@ class GeoElevationFile:
         d = 1. / self.square_side
         d_meters = d * mod_utils.ONE_DEGREE
 
+        row, column = self.get_row_and_column(latitude, longitude)
+
+        point_1 = self.latitude + 1 - row * d      , self.longitude + column * d
+        point_2 = self.latitude + 1 - (row + 1) * d, self.longitude + column * d
+        point_3 = self.latitude + 1 - row * d      , self.longitude + (column + 1) * d
+        point_4 = self.latitude + 1 - (row + 1) * d, self.longitude + (column + 1) * d
+
+        assert latitude <= point_1[0] and point_1[1] <= longitude
+        assert point_2[0] <= latitude and point_2[1] <= longitude
+        assert latitude <= point_3[0] and longitude <= point_3[1]
+        assert point_2[0] <= latitude and longitude <= point_4[1]
+
         # Since the less the distance => the more important should be the 
         # distance of the point, we'll use d-distance as importance coef 
         # here:
-        importance_1 = d_meters - mod_utils.distance(latitude + d, longitude, latitude, longitude)
-        elevation_1  = self.geo_elevation_data.get_elevation(latitude + d, longitude, approximate=False)
+        distance_1 = mod_utils.distance(point_1[0], point_1[1], latitude, longitude) 
+        elevation_1  = self.geo_elevation_data.get_elevation(point_1[0], point_1[1], approximate=False)
 
-        importance_2 = d_meters - mod_utils.distance(latitude - d, longitude, latitude, longitude)
-        elevation_2  = self.geo_elevation_data.get_elevation(latitude - d, longitude, approximate=False)
+        distance_2 = mod_utils.distance(point_2[0], point_2[1], latitude, longitude) 
+        elevation_2  = self.geo_elevation_data.get_elevation(point_2[0], point_2[1], approximate=False)
 
-        importance_3 = d_meters - mod_utils.distance(latitude, longitude + d, latitude, longitude)
-        elevation_3  = self.geo_elevation_data.get_elevation(latitude, longitude + d, approximate=False)
+        distance_3 = mod_utils.distance(point_3[0], point_3[1], latitude, longitude) 
+        elevation_3  = self.geo_elevation_data.get_elevation(point_3[0], point_3[1], approximate=False)
 
-        importance_4 = d_meters - mod_utils.distance(latitude, longitude - d, latitude, longitude)
-        elevation_4  = self.geo_elevation_data.get_elevation(latitude, longitude - d, approximate=False)
-        # TODO(TK) Check if coordinates inside the same file, and only the decide if to xall 
-        # self.geo_elevation_data.get_elevation or just self.get_elevation
+        distance_4 = mod_utils.distance(point_4[0], point_4[1], latitude, longitude) 
+        elevation_4  = self.geo_elevation_data.get_elevation(point_4[0], point_4[1], approximate=False)
+
+        max_distance = max(distance_1, distance_2, distance_3, distance_4)
+
+        importance_1 = max_distance - distance_1
+        importance_2 = max_distance - distance_2
+        importance_3 = max_distance - distance_3
+        importance_4 = max_distance - distance_4
 
         if elevation_1 == None or elevation_2 == None or elevation_3 == None or elevation_4 == None:
             elevation = self.get_elevation(latitude, longitude, approximate=False)
