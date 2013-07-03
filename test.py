@@ -21,9 +21,10 @@ Run all tests with:
 
 import pdb
 
-import logging        as mod_logging
-import unittest as mod_unittest
-import srtm           as mod_srtm
+import logging      as mod_logging
+import unittest     as mod_unittest
+import srtm         as mod_srtm
+import srtm.utils   as mod_utils
 
 mod_logging.basicConfig(level=mod_logging.DEBUG,
                         format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
@@ -142,3 +143,32 @@ class Tests(mod_unittest.TestCase):
 
         self.assertNotEquals(elevation_with_approximation, elevation_without_approximation)
         self.assertTrue(abs(elevation_with_approximation - elevation_without_approximation) < 30)
+
+    def test_rows_and_columns(self):
+        elevation_data = mod_srtm.get_data()
+        elevation_file = elevation_data.get_file(47.0, 13.99)
+        print elevation_file.latitude
+        print elevation_file.longitude
+        print elevation_file.square_side
+
+        d = 1. / elevation_file.square_side
+        d_meters = d * mod_utils.ONE_DEGREE
+
+        row_1, column_1 = elevation_file.get_row_and_column(47, 13)
+        row_2, column_2 = elevation_file.get_row_and_column(47 - d * .5, 13)
+        self.assertEquals(row_1,    row_2)
+        self.assertEquals(column_1, column_2)
+
+        row_1, column_1 = elevation_file.get_row_and_column(47, 13)
+        row_2, column_2 = elevation_file.get_row_and_column(47, 13 + d * .5)
+        self.assertEquals(row_1,    row_2)
+        self.assertEquals(column_1, column_2)
+
+        row_1, column_1 = elevation_file.get_row_and_column(47, 13)
+        row_2, column_2 = elevation_file.get_row_and_column(47, 13 + d * 1.1)
+        self.assertEquals(row_1,    row_2)
+        self.assertEquals(column_1, column_2 - 1)
+
+        row_1, column_1 = elevation_file.get_row_and_column(47, 13)
+        row_2, column_2 = elevation_file.get_row_and_column(47 - d * 1.1, 13)
+        self.assertEquals(row_1,    row_2 - 1)
