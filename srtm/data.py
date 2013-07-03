@@ -231,6 +231,24 @@ class GeoElevationFile:
         return mod_math.floor((self.latitude + 1 - latitude) * float(self.square_side - 1)), \
                mod_math.floor((longitude - self.longitude) * float(self.square_side - 1))
 
+    def get_neighbour_points(self, latitude, longitude):
+        d = 1. / self.square_side
+        d_meters = d * mod_utils.ONE_DEGREE
+
+        row, column = self.get_row_and_column(latitude, longitude)
+
+        point_1 = self.latitude + 1 - row * d      , self.longitude + column * d
+        point_2 = self.latitude + 1 - (row + 1) * d, self.longitude + column * d
+        point_3 = self.latitude + 1 - row * d      , self.longitude + (column + 1) * d
+        point_4 = self.latitude + 1 - (row + 1) * d, self.longitude + (column + 1) * d
+
+        assert latitude <= point_1[0] and point_1[1] <= longitude
+        assert point_2[0] <= latitude and point_2[1] <= longitude
+        assert latitude <= point_3[0] and longitude <= point_3[1]
+        assert point_2[0] <= latitude and longitude <= point_4[1]
+
+        return point_1, point_2, point_3, point_4
+
     def get_elevation(self, latitude, longitude, approximate=None):
         """
         If approximate is True then only the points from SRTM grid will be 
@@ -256,20 +274,8 @@ class GeoElevationFile:
         Dummy approximation with nearest points. The nearest the neighbour the 
         more important will be its elevation.
         """
-        d = 1. / self.square_side
-        d_meters = d * mod_utils.ONE_DEGREE
 
-        row, column = self.get_row_and_column(latitude, longitude)
-
-        point_1 = self.latitude + 1 - row * d      , self.longitude + column * d
-        point_2 = self.latitude + 1 - (row + 1) * d, self.longitude + column * d
-        point_3 = self.latitude + 1 - row * d      , self.longitude + (column + 1) * d
-        point_4 = self.latitude + 1 - (row + 1) * d, self.longitude + (column + 1) * d
-
-        assert latitude <= point_1[0] and point_1[1] <= longitude
-        assert point_2[0] <= latitude and point_2[1] <= longitude
-        assert latitude <= point_3[0] and longitude <= point_3[1]
-        assert point_2[0] <= latitude and longitude <= point_4[1]
+        point_1, point_2, point_3, point_4 = self.get_neighbour_points(latitude, longitude)
 
         # Since the less the distance => the more important should be the 
         # distance of the point, we'll use d-distance as importance coef 
