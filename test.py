@@ -23,6 +23,8 @@ import pdb
 
 import logging      as mod_logging
 import unittest     as mod_unittest
+import math         as mod_math
+
 import srtm         as mod_srtm
 import srtm.utils   as mod_utils
 
@@ -172,3 +174,25 @@ class Tests(mod_unittest.TestCase):
         row_1, column_1 = elevation_file.get_row_and_column(47, 13)
         row_2, column_2 = elevation_file.get_row_and_column(47 - d * 1.1, 13)
         self.assertEquals(row_1,    row_2 - 1)
+
+    def test_neighbour_points(self):
+        elevation_data = mod_srtm.get_data()
+        for i in range(1000):
+            latitude  = 47 + i / 5000.
+            longitude = 13 + i / 5000.
+
+            print 'point:', latitude, longitude
+
+            elevation_file = elevation_data.get_file(latitude, longitude)
+            d = 1. / elevation_file.square_side
+            d_meters = d * mod_utils.ONE_DEGREE
+
+            point_1, point_2, point_3, point_4 = elevation_file.get_neighbour_points(latitude, longitude)
+
+            print 'Neighbour points:'
+            print point_1
+            print point_2
+            print point_3
+            print point_4
+
+            self.assertTrue(mod_utils.distance(point_1[0], point_1[1], latitude, longitude) < d_meters * mod_math.sqrt(2.))
