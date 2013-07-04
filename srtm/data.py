@@ -237,17 +237,18 @@ class GeoElevationFile:
 
         row, column = self.get_row_and_column(latitude, longitude)
 
-        point_1 = self.latitude + 1 - row * d      , self.longitude + column * d
-        point_2 = self.latitude + 1 - (row + 1) * d, self.longitude + column * d
-        point_3 = self.latitude + 1 - row * d      , self.longitude + (column + 1) * d
-        point_4 = self.latitude + 1 - (row + 1) * d, self.longitude + (column + 1) * d
+        left   = self.longitude + column * d
+        right  = self.longitude + (column + 1) * d
+        bottom = self.latitude + 1 - (row + 1) * d
+        top    = self.latitude + 1 - row * d
 
-        assert latitude <= point_1[0] and point_1[1] <= longitude
-        assert point_2[0] <= latitude and point_2[1] <= longitude
-        assert latitude <= point_3[0] and longitude <= point_3[1]
-        assert point_2[0] <= latitude and longitude <= point_4[1]
+        pdb.set_trace()
+        assert left      <= longitude
+        assert longitude <= right
+        assert bottom    <= latitude
+        assert latitude  <= top
 
-        return point_1, point_2, point_3, point_4
+        return left, right, top, bottom
 
     def get_elevation(self, latitude, longitude, approximate=None):
         """
@@ -262,7 +263,6 @@ class GeoElevationFile:
         points = self.square_side ** 2
 
         row, column = self.get_row_and_column(latitude, longitude)
-        print row, column
 
         if approximate:
             return self.approximation(latitude, longitude)
