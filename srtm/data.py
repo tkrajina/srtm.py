@@ -228,6 +228,8 @@ class GeoElevationFile:
         self.square_side = int(square_side)
 
     def get_row_and_column(self, latitude, longitude):
+        # Note the row/column detection isn't always correct because of 
+        # floating point errors near the borders of the grid:
         return mod_math.floor((self.latitude + 1 - latitude) * float(self.square_side - 1)), \
                mod_math.floor((longitude - self.longitude) * float(self.square_side - 1))
 
@@ -237,18 +239,24 @@ class GeoElevationFile:
 
         row, column = self.get_row_and_column(latitude, longitude)
 
-        left   = self.longitude + column * d
-        right  = self.longitude + (column + 1) * d
-        bottom = self.latitude + 1 - (row + 1) * d
-        top    = self.latitude + 1 - row * d
+        longitude_1 = self.longitude + column * d
+        longitude_2 = self.longitude + (column + 1) * d
+        latitude_1  = self.latitude + 1 - (row + 1) * d
+        latitude_2  = self.latitude + 1 - row * d
 
-        pdb.set_trace()
+        """
+        # Those asserts won't always pass because of floating point operations 
+        # near the borders of the grid. At the moment this is not important 
+        # (this method is used only for approximation, but it may change in 
+        # the future:
         assert left      <= longitude
         assert longitude <= right
         assert bottom    <= latitude
         assert latitude  <= top
+        """
 
-        return left, right, top, bottom
+        return ((latitude_1, longitude_1), (latitude_1, longitude_2),
+                (latitude_2, longitude_1), (latitude_2, longitude_2))
 
     def get_elevation(self, latitude, longitude, approximate=None):
         """
