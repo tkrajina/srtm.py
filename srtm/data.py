@@ -244,7 +244,6 @@ class GeoElevationFile:
         points = self.square_side ** 2
 
         row, column = self.get_row_and_column(latitude, longitude)
-        print row, column
 
         if approximate:
             return self.approximation(latitude, longitude)
