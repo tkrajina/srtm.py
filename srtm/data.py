@@ -196,6 +196,59 @@ class GeoElevationData:
 
         return image
 
+    def add_elevations(self, gpx, smooth=False, gpx_smooth_no=0):
+        try: import gpxpy
+        except: raise Exception('gpxpy needed')
+
+        if smooth:
+            self._add_sampled_elevations(gpx)
+        else:
+            for point in gpx.walk(only_points=True):
+                point.elevation = self.get_elevation(point.latitude, point.longitude)
+
+        for i in range(gpx_smooth_no):
+            gpx.smooth(vertical=True, horizontal=False)
+
+    def _add_interval_elevations(self, gpx, min_interval_length=100):
+        """
+        Adds elevation on points every min_interval_length and add missing 
+        elevation between
+        """
+        last_interval_changed = 0
+        for track in gpx.tracks:
+            for segment in track.segments:
+                previous_point = None
+                length = 0
+                for no, point in enumerate(segment.points):
+                    if previous_point:
+                        length += point.distance_2d(previous_point)
+
+                    if no == 0 or no == len(segment.points) - 1 or length > last_interval_changed:
+                        last_interval_changed += min_interval_length
+                        point.elevation = self.get_elevation(point.latitude, point.longitude)
+                    else:
+                        point.elevation = None
+                    previous_point = point
+        gpx.add_missing_elevations()
+
+    def _add_sampled_elevations(self, gpx):
+        # Use some random intervals here to randomize a bit:
+        self._add_interval_elevations(gpx, min_interval_length=35)
+        elevations_1 = list(map(lambda point: point.elevation, gpx.walk(only_points=True)))
+        self._add_interval_elevations(gpx, min_interval_length=141)
+        elevations_2 = list(map(lambda point: point.elevation, gpx.walk(only_points=True)))
+        self._add_interval_elevations(gpx, min_interval_length=241)
+        elevations_3 = list(map(lambda point: point.elevation, gpx.walk(only_points=True)))
+
+        n = 0
+        for point in gpx.walk(only_points=True):
+            if elevations_1[n] != None and elevations_2[n] != None and elevations_3[n] != None:
+                #print elevations_1[n], elevations_2[n], elevations_3[n]
+                point.elevation = (elevations_1[n] + elevations_2[n] + elevations_3[n]) / 3.
+            else:
+                point.elevation = None
+            n += 1
+
 class GeoElevationFile:
     """
     Contains data from a single Shuttle elevation file.

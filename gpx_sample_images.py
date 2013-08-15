@@ -3,7 +3,7 @@ import cartesius.main as mod_cartesius
 import cartesius.charts as mod_charts
 import cartesius.elements as mod_elements
 import logging as mod_logging
-import srtm.gpx as mod_srtmgpx
+import srtm as mod_srtm
 
 mod_logging.basicConfig(level=mod_logging.DEBUG,
                         format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
@@ -30,12 +30,14 @@ coordinate_system.add(mod_elements.Grid(20, 100))
 gpx = sample_gpx()
 coordinate_system.add(get_line(gpx, color=(0, 0, 0)))
 
+data = mod_srtm.get_data()
+
 gpx = sample_gpx()
-mod_srtmgpx.add_elevations(gpx)
+data.add_elevations(gpx)
 coordinate_system.add(get_line(gpx, color=(0, 0, 255)))
 
 gpx = sample_gpx()
-mod_srtmgpx.add_elevations(gpx, smooth=True)
+data.add_elevations(gpx, smooth=True)
 coordinate_system.add(get_line(gpx, color=(255, 0, 0)))
 
 coordinate_system.add(mod_elements.Axis(horizontal=True, labels=250, points=50))

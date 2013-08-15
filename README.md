@@ -16,17 +16,19 @@ You can see SRTM.py in action on [Trackprofiler (online GPS track editor and org
 
 You can add elevations for all points in a GPS track with:
 
-    import srtm.gpx
+    import srtm
     import gpxpy
     gpx = gpxpy.parse(open('your-gpx-file.gpx'))
-    srtm.gpx.add_elevations(gpx)
+    elevation_data = srtm.get_data()
+    elevation_data.add_elevations(gpx)
 
 But this is raw SRTM data. If you need some approximations, you can try with:
 
     import srtm.gpx
     import gpxpy
     gpx = gpxpy.parse(open('your-gpx-file.gpx'))
-    srtm.gpx.add_elevations(gpx, smooth=True)
+    elevation_data = srtm.get_data()
+    elevation_data.add_elevations(gpx, smooth=True)
 
 The result on a graph:
 
