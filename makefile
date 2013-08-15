@@ -14,6 +14,7 @@ pypi-upload: check-all-commited
 	python setup.py sdist upload
 create-sample-images:
 	python sample_images.py
+	python gpx_sample_images.py
 upload-sample-images-to-github-pages: check-all-commited create-sample-images
 	git branch -D gh-pages
 	git checkout -b gh-pages

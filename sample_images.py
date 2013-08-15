@@ -20,10 +20,8 @@ import ImageDraw as mod_imagedraw
 
 import srtm as mod_srtm
 
-"""
 mod_logging.basicConfig(level=mod_logging.DEBUG,
                         format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-"""
 
 geo_elevation_data = mod_srtm.get_data()
 
