@@ -196,9 +196,19 @@ class GeoElevationData:
 
         return image
 
-    def add_elevations(self, gpx, smooth=False, gpx_smooth_no=0):
+    def add_elevations(self, gpx, only_missing=False, smooth=False, gpx_smooth_no=0):
+        """
+        only_missing -- if True only points without elevation will get a SRTM value
+
+        smooth -- if True interpolate between points
+
+        if gpx_smooth_no > 0 -- execute gpx.smooth(vertical=True)
+        """
         try: import gpxpy
         except: raise Exception('gpxpy needed')
+
+        if only_missing:
+            original_elevations = list(map(lambda point: point.elevation, gpx.walk(only_points=True)))
 
         if smooth:
             self._add_sampled_elevations(gpx)
@@ -208,6 +218,11 @@ class GeoElevationData:
 
         for i in range(gpx_smooth_no):
             gpx.smooth(vertical=True, horizontal=False)
+
+        if only_missing:
+            for original_elevation, point in zip(original_elevations, list(gpx.walk(only_points=True))):
+                if original_elevation != None:
+                    point.elevation = original_elevation
 
     def _add_interval_elevations(self, gpx, min_interval_length=100):
         """
