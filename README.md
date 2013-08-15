@@ -12,10 +12,32 @@ You can see SRTM.py in action on [Trackprofiler (online GPS track editor and org
     elevation_data = srtm.get_data()
     print 'CGN Airport elevation (meters):', elevation_data.get_elevation(50.8682, 7.1377)
 
-With get\_elevation() an elevation of the the nearest location found in the SRTM data will be given.
-If you need an approximation based on nearby locations, you can use:
+## GPS Tracks
 
-    elevation_data.get_elevation(50.8682, 7.1377, approximate=True)
+You can add elevations for all points in a GPS track with:
+
+    import srtm.gpx
+    import gpxpy
+    gpx = gpxpy.parse(open('your-gpx-file.gpx'))
+    srtm.gpx.add_elevations(gpx)
+
+But this is raw SRTM data. If you need some approximations, you can try with:
+
+    import srtm.gpx
+    import gpxpy
+    gpx = gpxpy.parse(open('your-gpx-file.gpx'))
+    srtm.gpx.add_elevations(gpx, smooth=True)
+
+The result on a graph:
+
+![GPX elevations](http://tkrajina.github.io/srtm.py/gpx_elevations.png)
+
+In gray is the original elevation (taken with an android smartphone).
+Blue is raw-srtm-data elevations, in red is the smoothed (approximated) srtm data.
+
+You need [gpxpy](http://github.com/tkrajina/gpxpy) installed in order for this feature to work.
+
+## Elevation images
 
 You can create elevation images with:
 
@@ -28,7 +50,7 @@ You can create elevation images with:
 On every elevation requested the library will:
 
  * Check if the SRTM file is stored locally
- * If not -- download it from NASA servers
+ * If not -- download it from NASA servers and store locally (in ~/.elevations)
  * Parse elevations from it
 
 That's why the first run of your application will always take a few seconds.
