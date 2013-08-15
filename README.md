@@ -98,5 +98,5 @@ gpxelevations is a utility commandline tool to add/update elevations in a GPS tr
 
 ## License
 
-GPX.py is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
+SRTM.py is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
