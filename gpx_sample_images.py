@@ -8,7 +8,7 @@ import srtm as mod_srtm
 mod_logging.basicConfig(level=mod_logging.DEBUG,
                         format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 
-def get_line(gpx, color):
+def get_line(gpx, color, transparency_mask=None):
     def f():
         previous_point = None
         length = 0
@@ -18,12 +18,12 @@ def get_line(gpx, color):
             previous_point = point
             yield mod_charts.data(length, point.elevation)
 
-    return mod_charts.LineChart(data=f, color=color)
+    return mod_charts.LineChart(data=f, color=color, transparency_mask=transparency_mask)
 
 def sample_gpx():
     return mod_gpxpy.parse(open('sample_files/setnjica-kod-karojbe.gpx'))
 
-coordinate_system = mod_cartesius.CoordinateSystem(bounds=(-150, 2800, -30, 450))
+coordinate_system = mod_cartesius.CoordinateSystem(bounds=(-300, 6800, -40, 480))
 
 coordinate_system.add(mod_elements.Grid(20, 100))
 
@@ -34,15 +34,16 @@ data = mod_srtm.get_data()
 
 gpx = sample_gpx()
 data.add_elevations(gpx)
-coordinate_system.add(get_line(gpx, color=(0, 0, 255)))
+coordinate_system.add(get_line(gpx, color=(0, 0, 255), transparency_mask=150))
 
 gpx = sample_gpx()
 data.add_elevations(gpx, smooth=True)
 coordinate_system.add(get_line(gpx, color=(255, 0, 0)))
 
-coordinate_system.add(mod_elements.Axis(horizontal=True, labels=250, points=50))
-coordinate_system.add(mod_elements.Axis(vertical=True, labels=50, points=10))
+coordinate_system.add(mod_elements.Axis(horizontal=True, labels=500, points=100))
+coordinate_system.add(mod_elements.Axis(vertical=True, labels=100, points=20))
 
 image = coordinate_system.draw(600, 400, antialiasing=True)
+#image.show()
 
 image.save('gpx_elevations.png')
