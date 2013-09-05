@@ -128,9 +128,9 @@ class FileHandler:
         return mod_path.exists('%s/%s' % (self.get_srtm_dir(), file_name))
 
     def write(self, file_name, contents):
-        with open('%s/%s' % (self.get_srtm_dir(), file_name), 'w') as f:
+        with open('%s/%s' % (self.get_srtm_dir(), file_name), 'wb') as f:
             f.write(contents)
 
     def read(self, file_name):
-        with open('%s/%s' % (self.get_srtm_dir(), file_name), 'r') as f:
+        with open('%s/%s' % (self.get_srtm_dir(), file_name), 'rb') as f:
             return f.read()
