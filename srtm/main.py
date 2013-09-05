@@ -111,10 +111,13 @@ class FileHandler:
     def get_srtm_dir(self):
         """ The default path to store files. """
         # Local cache path:
-        if not mod_os.environ.has_key('HOME'):
+        result = ""
+        if mod_os.environ.has_key('HOME'):
+            result = '{0}/.srtm'.format(mod_os.environ['HOME'])
+        elif mod_os.environ.has_key('HOMEPATH'):
+            result = '{0}/.srtm'.format(mod_os.environ['HOMEPATH'])
+        else:
             raise Error('No default HOME directory found, please specify a path where to store files')
-
-        result = '{0}/.srtm'.format(mod_os.environ['HOME'])
 
         if not mod_path.exists(result):
             mod_os.makedirs(result)
