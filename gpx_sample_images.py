@@ -16,14 +16,14 @@ def get_line(gpx, color, transparency_mask=None):
             if previous_point:
                 length += previous_point.distance_2d(point)
             previous_point = point
-            yield mod_charts.data(length, point.elevation)
+            yield mod_charts.data(length, point.elevation if point.elevation != None else 0)
 
     return mod_charts.LineChart(data=f, color=color, transparency_mask=transparency_mask)
 
 def sample_gpx():
-    return mod_gpxpy.parse(open('sample_files/setnjica-kod-karojbe.gpx'))
+    return mod_gpxpy.parse(open('sample_files/grmada.gpx'))
 
-coordinate_system = mod_cartesius.CoordinateSystem(bounds=(-300, 6800, -40, 480))
+coordinate_system = mod_cartesius.CoordinateSystem(bounds=(-300, 50000, -40, 1000))
 
 coordinate_system.add(mod_elements.Grid(20, 100))
 
@@ -46,4 +46,4 @@ coordinate_system.add(mod_elements.Axis(vertical=True, labels=100, points=20))
 image = coordinate_system.draw(600, 400, antialiasing=True)
 #image.show()
 
-image.save('gpx_elevations.png')
+image.show()

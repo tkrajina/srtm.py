@@ -14,8 +14,6 @@ parser = mod_argparse.ArgumentParser(
 
 parser.add_argument('-o', '--overwrite', action='store_true', default=False,
                     help='Overwrite existing elevations (otherwise will add elevations only where not yet present)')
-parser.add_argument('-p', '--approximate', action='store_true', default=False,
-                    help='Approximate elevations with neighbour point elevations')
 parser.add_argument('-s', '--smooth', action='store_true', default=False,
                     help='Smooth elevations')
 parser.add_argument('-c', '--calculate', action='store_true', default=False,
@@ -35,7 +33,7 @@ if args.verbose:
 geo_elevation_data = mod_srtm.get_data()
 
 def update_gpx(gpx):
-    geo_elevation_data.add_elevations(gpx, only_missing=not args.overwrite, smooth=args.approximate)
+    geo_elevation_data.add_elevations(gpx, only_missing=not args.overwrite, smooth=args.smooth)
 
 for gpx_file in args.gpx_files:
     with open(gpx_file) as f:
