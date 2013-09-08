@@ -229,9 +229,9 @@ class GeoElevationData:
         Adds elevation on points every min_interval_length and add missing 
         elevation between
         """
-        last_interval_changed = 0
         for track in gpx.tracks:
             for segment in track.segments:
+                last_interval_changed = 0
                 previous_point = None
                 length = 0
                 for no, point in enumerate(segment.points):
