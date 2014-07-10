@@ -50,8 +50,8 @@ for gpx_file in args.gpx_files:
 
         file_name = args.file
         if not file_name:
-            if '.gpx' in gpx_file.lower():
-                file_name = gpx_file.lower().replace('.gpx', '_with_elevations.gpx')
+            if gpx_file.lower().endswith('.gpx' ):
+                file_name = gpx_file[:-4] + '_with_elevations.gpx'
             else:
                 file_name = 'gpx_with_elevations.gpx'
 
