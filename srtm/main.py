@@ -44,11 +44,11 @@ def get_data(srtm1=True, srtm3=True, leave_zipped=False, file_handler=None,
 
     If you need to change the way the files are saved locally (for example if 
     you need to save them locally) -- change the file_handler. See 
-    srtm.utils.FileHandler.
+    srtm.main.FileHandler.
 
     If leave_zipped is True then files will be stored locally as compressed 
     zip files. That means less disk space but more computing space for every 
-    file loaded. 
+    file loaded.
 
     If use_included_urls is True urls to SRTM files included in the library 
     will be used. Set to false if you need to reload them on first run.
