@@ -112,9 +112,9 @@ class FileHandler:
         """ The default path to store files. """
         # Local cache path:
         result = ""
-        if mod_os.environ.has_key('HOME'):
+        if 'HOME' in mod_os.environ:
             result = '{0}/.cache/srtm'.format(mod_os.environ['HOME'])
-        elif mod_os.environ.has_key('HOMEPATH'):
+        elif 'HOMEPATH' in mod_os.environ:
             result = '{0}/.cache/srtm'.format(mod_os.environ['HOMEPATH'])
         else:
             raise Exception('No default HOME directory found, please specify a path where to store files')

@@ -80,7 +80,7 @@ class GeoElevationData:
         if not file_name:
             return None
 
-        if self.files.has_key(file_name):
+        if (file_name in self.files):
             return self.files[file_name]
         else:
             data = self.retrieve_or_load_file_data(file_name)
@@ -103,9 +103,9 @@ class GeoElevationData:
 
         url = None
 
-        if self.srtm1_files.has_key(file_name):
+        if (file_name in self.srtm1_files):
             url = self.srtm1_files[file_name]
-        elif self.srtm3_files.has_key(file_name):
+        elif (file_name in self.srtm3_files):
             url = self.srtm3_files[file_name]
 
         if not url:
@@ -147,7 +147,7 @@ class GeoElevationData:
         file_name = '%s%s%s%s.hgt' % (north_south, str(int(abs(mod_math.floor(latitude)))).zfill(2), 
                                       east_west, str(int(abs(mod_math.floor(longitude)))).zfill(3))
 
-        if not self.srtm1_files.has_key(file_name) and not self.srtm3_files.has_key(file_name):
+        if not (file_name in self.srtm1_files) and not (file_name in self.srtm3_files):
             #mod_logging.debug('No file found for ({0}, {1}) (file_name: {2})'.format(latitude, longitude, file_name))
             return None
 
