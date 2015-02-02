@@ -57,7 +57,7 @@ class Tests(mod_unittest.TestCase):
 
     def test_point_without_file(self):
         geo_elevation_data = mod_srtm.get_data()
-        print geo_elevation_data.get_elevation(0, 0)
+        print(geo_elevation_data.get_elevation(0, 0))
 
     def test_files_equality(self):
         geo_elevation_data = mod_srtm.get_data()
@@ -106,7 +106,7 @@ class Tests(mod_unittest.TestCase):
         geo_elevation_data = mod_srtm.get_data()
         geo_file = geo_elevation_data.get_file(47.0, 13.99)
 
-        print 'file:', geo_file
+        print('file:', geo_file)
 
         self.assertEquals(geo_file.get_elevation(47, 13),
                           geo_file.get_elevation(47, 13))
@@ -137,8 +137,8 @@ class Tests(mod_unittest.TestCase):
         elevation_without_approximation = geo_elevation_data.get_elevation(47, 13)
         elevation_with_approximation = geo_elevation_data.get_elevation(47, 13, approximate=True)
 
-        print elevation_without_approximation
-        print elevation_with_approximation
+        print(elevation_without_approximation)
+        print(elevation_with_approximation)
 
         self.assertNotEquals(elevation_with_approximation, elevation_without_approximation)
         self.assertTrue(abs(elevation_with_approximation - elevation_without_approximation) < 30)

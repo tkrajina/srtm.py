@@ -62,5 +62,5 @@ if __name__ == '__main__':
     latitude = 45.
     longitude = 45.
 
-    print get_geo_elevation_data()
+    print(get_geo_elevation_data())
 
