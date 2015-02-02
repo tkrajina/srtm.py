@@ -21,8 +21,6 @@ import re             as mod_re
 import pickle         as mod_pickle
 import os.path        as mod_path
 
-import data           as mod_data
-
 def retrieve_all_files_urls(url):
     mod_logging.info('Retrieving {0}'.format(url))
     url_stream = mod_urllib.urlopen(url)
