@@ -19,7 +19,10 @@ import pdb
 import logging    as mod_logging
 import math       as mod_math
 import zipfile    as mod_zipfile
-import cStringIO  as mod_cstringio
+try:
+    import cStringIO as mod_cstringio
+except:
+    from io import StringIO as mod_cstringio
 
 ONE_DEGREE = 1000. * 10000.8 / 90.
 

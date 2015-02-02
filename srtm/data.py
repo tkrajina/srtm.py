@@ -25,7 +25,10 @@ import math as mod_math
 import re as mod_re
 import urllib as mod_urllib
 import os.path as mod_path
-import cStringIO as mod_cstringio
+try:
+    import cStringIO as mod_cstringio
+except:
+    from io import StringIO as mod_cstringio
 
 from . import utils as mod_utils
 from . import retriever as mod_retriever
