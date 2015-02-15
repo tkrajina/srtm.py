@@ -32,28 +32,28 @@ class Tests(mod_unittest.TestCase):
 
     def test_random_points(self):
         geo_elevation_data = mod_srtm.get_data()
-        self.assertEquals(63, geo_elevation_data.get_elevation(46., 13.))
-        self.assertEquals(2714, geo_elevation_data.get_elevation(46.999999, 13.))
-        self.assertEquals(1643, geo_elevation_data.get_elevation(46.999999, 13.999999))
-        self.assertEquals(553, geo_elevation_data.get_elevation(46., 13.999999))
-        self.assertEquals(203, geo_elevation_data.get_elevation(45.2732, 13.7139))
-        self.assertEquals(460, geo_elevation_data.get_elevation(45.287, 13.905))
+        self.assertEqual(63, geo_elevation_data.get_elevation(46., 13.))
+        self.assertEqual(2714, geo_elevation_data.get_elevation(46.999999, 13.))
+        self.assertEqual(1643, geo_elevation_data.get_elevation(46.999999, 13.999999))
+        self.assertEqual(553, geo_elevation_data.get_elevation(46., 13.999999))
+        self.assertEqual(203, geo_elevation_data.get_elevation(45.2732, 13.7139))
+        self.assertEqual(460, geo_elevation_data.get_elevation(45.287, 13.905))
 
     def test_around_zero_longitude(self):
         geo_elevation_data = mod_srtm.get_data()
-        self.assertEquals(61, geo_elevation_data.get_elevation(51.2, 0.0))
-        self.assertEquals(100, geo_elevation_data.get_elevation(51.2, -0.1))
-        self.assertEquals(59, geo_elevation_data.get_elevation(51.2, 0.1))
+        self.assertEqual(61, geo_elevation_data.get_elevation(51.2, 0.0))
+        self.assertEqual(100, geo_elevation_data.get_elevation(51.2, -0.1))
+        self.assertEqual(59, geo_elevation_data.get_elevation(51.2, 0.1))
 
     def test_around_zero_latitude(self):
         geo_elevation_data = mod_srtm.get_data()
-        self.assertEquals(393, geo_elevation_data.get_elevation(0, 15))
-        self.assertEquals(423, geo_elevation_data.get_elevation(-0.1, 15))
-        self.assertEquals(381, geo_elevation_data.get_elevation(0.1, 15))
+        self.assertEqual(393, geo_elevation_data.get_elevation(0, 15))
+        self.assertEqual(423, geo_elevation_data.get_elevation(-0.1, 15))
+        self.assertEqual(381, geo_elevation_data.get_elevation(0.1, 15))
 
     def test_point_with_invalid_elevation(self):
         geo_elevation_data = mod_srtm.get_data()
-        self.assertEquals(None, geo_elevation_data.get_elevation(47.0, 13.07))
+        self.assertEqual(None, geo_elevation_data.get_elevation(47.0, 13.07))
 
     def test_point_without_file(self):
         geo_elevation_data = mod_srtm.get_data()
@@ -61,24 +61,24 @@ class Tests(mod_unittest.TestCase):
 
     def test_files_equality(self):
         geo_elevation_data = mod_srtm.get_data()
-        self.assertEquals(geo_elevation_data.get_file(47.0, 13.99),
+        self.assertEqual(geo_elevation_data.get_file(47.0, 13.99),
                           geo_elevation_data.get_file(47.0, 13.0))
-        self.assertEquals(geo_elevation_data.get_file(47.99, 13.99),
+        self.assertEqual(geo_elevation_data.get_file(47.99, 13.99),
                           geo_elevation_data.get_file(47.0, 13.0))
 
-        self.assertEquals(geo_elevation_data.get_file(-47.0, 13.99),
+        self.assertEqual(geo_elevation_data.get_file(-47.0, 13.99),
                           geo_elevation_data.get_file(-47.0, 13.0))
-        self.assertEquals(geo_elevation_data.get_file(-47.99, 13.99),
+        self.assertEqual(geo_elevation_data.get_file(-47.99, 13.99),
                           geo_elevation_data.get_file(-47.0, 13.0))
 
-        self.assertEquals(geo_elevation_data.get_file(-47.0, -13.99),
+        self.assertEqual(geo_elevation_data.get_file(-47.0, -13.99),
                           geo_elevation_data.get_file(-47.0, -13.0))
-        self.assertEquals(geo_elevation_data.get_file(-47.99, -13.99),
+        self.assertEqual(geo_elevation_data.get_file(-47.99, -13.99),
                           geo_elevation_data.get_file(-47.0, -13.0))
 
-        self.assertEquals(geo_elevation_data.get_file(47.0, -13.99),
+        self.assertEqual(geo_elevation_data.get_file(47.0, -13.99),
                           geo_elevation_data.get_file(47.0, -13.0))
-        self.assertEquals(geo_elevation_data.get_file(47.99, -13.99),
+        self.assertEqual(geo_elevation_data.get_file(47.99, -13.99),
                           geo_elevation_data.get_file(47.0, -13.0))
 
     def test_invalit_coordinates_for_file(self):
@@ -89,18 +89,18 @@ class Tests(mod_unittest.TestCase):
             self.assertFalse(geo_file.get_elevation(1, 1))
         except Exception as e:
             message = str(e)
-            self.assertEquals('Invalid latitude 1 for file N47E013.hgt', message)
+            self.assertEqual('Invalid latitude 1 for file N47E013.hgt', message)
 
         try:
             self.assertFalse(geo_file.get_elevation(47, 1))
         except Exception as e:
             message = str(e)
-            self.assertEquals('Invalid longitude 1 for file N47E013.hgt', message)
+            self.assertEqual('Invalid longitude 1 for file N47E013.hgt', message)
 
     def test_invalid_file(self):
         geo_elevation_data = mod_srtm.get_data()
         geo_file = geo_elevation_data.get_file(-47.0, -13.99)
-        self.assertEquals(None, geo_file)
+        self.assertEqual(None, geo_file)
 
     def test_coordinates_in_file(self):
         geo_elevation_data = mod_srtm.get_data()
@@ -108,13 +108,13 @@ class Tests(mod_unittest.TestCase):
 
         print('file:', geo_file)
 
-        self.assertEquals(geo_file.get_elevation(47, 13),
+        self.assertEqual(geo_file.get_elevation(47, 13),
                           geo_file.get_elevation(47, 13))
 
     def test_without_approximation(self):
         geo_elevation_data = mod_srtm.get_data()
 
-        self.assertEquals(geo_elevation_data.get_elevation(47.1, 13.1, approximate=False),
+        self.assertEqual(geo_elevation_data.get_elevation(47.1, 13.1, approximate=False),
                           geo_elevation_data.get_elevation(47.1, 13.1))
 
         # SRTM elevations are always integers:
