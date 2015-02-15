@@ -117,7 +117,7 @@ class GeoElevationData:
         if r.status_code < 200 or 300 <= r.status_code:
             raise Exception('Cannot retrieve %s' % url)
         mod_logging.info('Retrieving {0}'.format(url))
-        data = r.text
+        data = r.content
         mod_logging.info('Retrieved {0} ({1} bytes)'.format(url, len(data)))
 
         if not data:
