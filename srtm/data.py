@@ -23,7 +23,6 @@ import pdb
 import logging as mod_logging
 import math as mod_math
 import re as mod_re
-import urllib as mod_urllib
 import os.path as mod_path
 try:
     import cStringIO as mod_cstringio
@@ -32,6 +31,8 @@ except:
 
 from . import utils as mod_utils
 from . import retriever as mod_retriever
+
+import requests as mod_requests
 
 class GeoElevationData:
     """
@@ -112,11 +113,12 @@ class GeoElevationData:
             #mod_logging.error('No file found: {0}'.format(file_name))
             return None
 
-        f = mod_urllib.urlopen(url)
+        r = mod_requests.get(url)
+        if r.status_code < 200 or 300 <= r.status_code:
+            raise Exception('Cannot retrieve %s' % url)
         mod_logging.info('Retrieving {0}'.format(url))
-        data = f.read()
+        data = r.text
         mod_logging.info('Retrieved {0} ({1} bytes)'.format(url, len(data)))
-        f.close()
 
         if not data:
             return None
