@@ -19,7 +19,7 @@ import pdb
 import logging    as mod_logging
 import math       as mod_math
 import zipfile    as mod_zipfile
-import cStringIO  as mod_cstringio
+import io.BytesIO  as mod_cstringio
 
 ONE_DEGREE = 1000. * 10000.8 / 90.
 
@@ -56,7 +56,7 @@ def zip(contents, file_name):
 
 def unzip(contents):
     mod_logging.debug('Unzipping %s bytes' % len(contents))
-    zip_file = mod_zipfile.ZipFile(mod_cstringio.StringIO(contents))
+    zip_file = mod_zipfile.ZipFile(mod_cstringio(contents))
     zip_info_list = zip_file.infolist()
     zip_info = zip_info_list[0]
     result = zip_file.open(zip_info).read()
