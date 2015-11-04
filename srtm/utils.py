@@ -16,10 +16,10 @@
 
 import pdb
 
-import logging    as mod_logging
-import math       as mod_math
-import zipfile    as mod_zipfile
-from io import BytesIO  as mod_cstringio
+import logging
+import math
+import zipfile
+import io
 
 ONE_DEGREE = 1000. * 10000.8 / 90.
 
@@ -28,11 +28,11 @@ def distance(latitude_1, longitude_1, latitude_2, longitude_2):
     Distance between two points.
     """
 
-    coef = mod_math.cos(latitude_1 / 180. * mod_math.pi)
+    coef = math.cos(latitude_1 / 180. * math.pi)
     x = latitude_1 - latitude_2
     y = (longitude_1 - longitude_2) * coef
 
-    return mod_math.sqrt(x * x + y * y) * ONE_DEGREE
+    return math.sqrt(x * x + y * y) * ONE_DEGREE
 
 def get_color_between(color1, color2, i):
     """ i is a number between 0 and 1, if 0 then color1, if 1 color2, ... """
@@ -45,20 +45,20 @@ def get_color_between(color1, color2, i):
             int(color1[2] + (color2[2] - color1[2]) * i))
 
 def zip(contents, file_name):
-    mod_logging.debug('Zipping %s bytes' % len(contents))
-    result = mod_cstringio.StringIO()
-    zip_file = mod_zipfile.ZipFile(result, 'w', mod_zipfile.ZIP_DEFLATED, False)
+    logging.debug('Zipping %s bytes' % len(contents))
+    result = BytesIO()
+    zip_file = zipfile.ZipFile(result, 'w', zipfile.ZIP_DEFLATED, False)
     zip_file.writestr(file_name, contents)
     zip_file.close()
     result.seek(0)
-    mod_logging.debug('Zipped')
+    logging.debug('Zipped')
     return result.read()
 
 def unzip(contents):
-    mod_logging.debug('Unzipping %s bytes' % len(contents))
-    zip_file = mod_zipfile.ZipFile(mod_cstringio(contents))
+    logging.debug('Unzipping %s bytes' % len(contents))
+    zip_file = zipfile.ZipFile(BytesIO(contents))
     zip_info_list = zip_file.infolist()
     zip_info = zip_info_list[0]
     result = zip_file.open(zip_info).read()
-    mod_logging.debug('Unzipped')
+    logging.debug('Unzipped')
     return result

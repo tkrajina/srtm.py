@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import pdb
@@ -34,25 +34,8 @@ if args.verbose:
 
 geo_elevation_data = mod_srtm.get_data()
 
-def update_point(point, args):
-    if args.calculate or (args.overwrite or point.elevation == None):
-        calculated = geo_elevation_data.get_elevation(point.latitude, point.longitude, approximate=args.approximate)
-        if calculated and int(calculated) != calculated:
-            calculated = int(calculated * 10) / 10.
-        print '(%s, %s) currently: %s, calculated: %s' % (point.latitude, point.longitude, point.elevation, calculated)
-    else:
-        print '(%s, %s) left with %s' % (point.latitude, point.longitude, point.elevation)
-
 def update_gpx(gpx):
-    for route in gpx.routes:
-        for point in route.points:
-            update_point(point, args)
-
-    for track in gpx.tracks:
-        for segment in track.segments:
-            for point in segment.points:
-                update_point(point, args)
-
+    geo_elevation_data.add_elevations(gpx, only_missing=not args.overwrite, smooth=args.approximate)
 
 for gpx_file in args.gpx_files:
     with open(gpx_file) as f:
@@ -67,8 +50,8 @@ for gpx_file in args.gpx_files:
 
         file_name = args.file
         if not file_name:
-            if '.gpx' in gpx_file.lower():
-                file_name = gpx_file.lower().replace('.gpx', '_with_elevations.gpx')
+            if gpx_file.lower().endswith('.gpx' ):
+                file_name = gpx_file[:-4] + '_with_elevations.gpx'
             else:
                 file_name = 'gpx_with_elevations.gpx'
 

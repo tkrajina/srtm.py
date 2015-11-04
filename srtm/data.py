@@ -20,15 +20,15 @@ Classess containing parsed elevation data.
 
 import pdb
 
-import logging as mod_logging
-import math as mod_math
-import re as mod_re
-import urllib as mod_urllib
-import os.path as mod_path
-from io import BytesIO as mod_cstringio
+import logging
+import math
+import re
+import io
 
 from . import utils as mod_utils
-from . import retriever as mod_retriever
+from . import retriever as retriever
+
+import requests as requests
 
 class GeoElevationData:
     """
@@ -57,7 +57,7 @@ class GeoElevationData:
     def get_elevation(self, latitude, longitude, approximate=None):
         geo_elevation_file = self.get_file(float(latitude), float(longitude))
 
-        #mod_logging.debug('File for ({0}, {1}) -> {2}'.format(
+        #logging.debug('File for ({0}, {1}) -> {2}'.format(
         #                  latitude, longitude, geo_elevation_file))
 
         if not geo_elevation_file:
@@ -77,7 +77,7 @@ class GeoElevationData:
         if not file_name:
             return None
 
-        if self.files.has_key(file_name):
+        if (file_name in self.files):
             return self.files[file_name]
         else:
             data = self.retrieve_or_load_file_data(file_name)
@@ -100,20 +100,21 @@ class GeoElevationData:
 
         url = None
 
-        if self.srtm1_files.has_key(file_name):
+        if (file_name in self.srtm1_files):
             url = self.srtm1_files[file_name]
-        elif self.srtm3_files.has_key(file_name):
+        elif (file_name in self.srtm3_files):
             url = self.srtm3_files[file_name]
 
         if not url:
-            #mod_logging.error('No file found: {0}'.format(file_name))
+            #logging.error('No file found: {0}'.format(file_name))
             return None
 
-        f = mod_urllib.urlopen(url)
-        mod_logging.info('Retrieving {0}'.format(url))
-        data = f.read()
-        mod_logging.info('Retrieved {0} ({1} bytes)'.format(url, len(data)))
-        f.close()
+        r = requests.get(url)
+        if r.status_code < 200 or 300 <= r.status_code:
+            raise Exception('Cannot retrieve %s' % url)
+        logging.info('Retrieving {0}'.format(url))
+        data = r.content
+        logging.info('Retrieved {0} ({1} bytes)'.format(url, len(data)))
 
         if not data:
             return None
@@ -141,11 +142,11 @@ class GeoElevationData:
         else:
             east_west = 'W'
 
-        file_name = '%s%s%s%s.hgt' % (north_south, str(int(abs(mod_math.floor(latitude)))).zfill(2), 
-                                      east_west, str(int(abs(mod_math.floor(longitude)))).zfill(3))
+        file_name = '%s%s%s%s.hgt' % (north_south, str(int(abs(math.floor(latitude)))).zfill(2), 
+                                      east_west, str(int(abs(math.floor(longitude)))).zfill(3))
 
-        if not self.srtm1_files.has_key(file_name) and not self.srtm3_files.has_key(file_name):
-            #mod_logging.debug('No file found for ({0}, {1}) (file_name: {2})'.format(latitude, longitude, file_name))
+        if not (file_name in self.srtm1_files) and not (file_name in self.srtm3_files):
+            #logging.debug('No file found for ({0}, {1}) (file_name: {2})'.format(latitude, longitude, file_name))
             return None
 
         return file_name
@@ -156,12 +157,8 @@ class GeoElevationData:
         """
         Returns a PIL image.
         """
-        try:
-            import Image as mod_image
-            import ImageDraw as mod_imagedraw
-        except:
-            from PIL import Image as mod_image
-            from PIL import Image as mod_image
+        import Image as mod_image
+        import ImageDraw as mod_imagedraw
 
         if not size or len(size) != 2:
             raise Exception('Invalid size %s' % size)
@@ -212,7 +209,7 @@ class GeoElevationData:
         except: raise Exception('gpxpy needed')
 
         if only_missing:
-            original_elevations = list(map(lambda point: point.elevation, gpx.walk(only_points=True)))
+            original_elevations = list([point.elevation for point in gpx.walk(only_points=True)])
 
         if smooth:
             self._add_sampled_elevations(gpx)
@@ -233,9 +230,9 @@ class GeoElevationData:
         Adds elevation on points every min_interval_length and add missing 
         elevation between
         """
-        last_interval_changed = 0
         for track in gpx.tracks:
             for segment in track.segments:
+                last_interval_changed = 0
                 previous_point = None
                 length = 0
                 for no, point in enumerate(segment.points):
@@ -253,11 +250,11 @@ class GeoElevationData:
     def _add_sampled_elevations(self, gpx):
         # Use some random intervals here to randomize a bit:
         self._add_interval_elevations(gpx, min_interval_length=35)
-        elevations_1 = list(map(lambda point: point.elevation, gpx.walk(only_points=True)))
+        elevations_1 = list([point.elevation for point in gpx.walk(only_points=True)])
         self._add_interval_elevations(gpx, min_interval_length=141)
-        elevations_2 = list(map(lambda point: point.elevation, gpx.walk(only_points=True)))
+        elevations_2 = list([point.elevation for point in gpx.walk(only_points=True)])
         self._add_interval_elevations(gpx, min_interval_length=241)
-        elevations_3 = list(map(lambda point: point.elevation, gpx.walk(only_points=True)))
+        elevations_3 = list([point.elevation for point in gpx.walk(only_points=True)])
 
         n = 0
         for point in gpx.walk(only_points=True):
@@ -294,14 +291,14 @@ class GeoElevationFile:
 
         self.data = data
 
-        square_side = mod_math.sqrt(len(self.data) / 2.)
+        square_side = math.sqrt(len(self.data) / 2.)
         assert square_side == int(square_side), 'Invalid file size: {0} for file {1}'.format(len(self.data), self.file_name)
 
         self.square_side = int(square_side)
 
     def get_row_and_column(self, latitude, longitude):
-        return mod_math.floor((self.latitude + 1 - latitude) * float(self.square_side - 1)), \
-               mod_math.floor((longitude - self.longitude) * float(self.square_side - 1))
+        return math.floor((self.latitude + 1 - latitude) * float(self.square_side - 1)), \
+               math.floor((longitude - self.longitude) * float(self.square_side - 1))
 
     def get_elevation(self, latitude, longitude, approximate=None):
         """
@@ -376,7 +373,7 @@ class GeoElevationFile:
         i = row * (self.square_side) + column
         assert i < len(self.data) - 1
 
-        #mod_logging.debug('{0}, {1} -> {2}'.format(row, column, i))
+        #logging.debug('{0}, {1} -> {2}'.format(row, column, i))
 
         byte_1 = ord(self.data[i * 2])
         byte_2 = ord(self.data[i * 2 + 1])
@@ -391,7 +388,7 @@ class GeoElevationFile:
 
     def parse_file_name_starting_position(self):
         """ Returns (latitude, longitude) of lower left point of the file """
-        groups = mod_re.findall('([NS])(\d+)([EW])(\d+)\.hgt', self.file_name)
+        groups = re.findall('([NS])(\d+)([EW])(\d+)\.hgt', self.file_name)
 
         assert groups and len(groups) == 1 and len(groups[0]) == 4, 'Invalid file name {0}'.format(self.file_name)
 

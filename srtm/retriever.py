@@ -14,22 +14,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import logging        as mod_logging
-import os             as mod_os
-import urllib         as mod_urllib
-import re             as mod_re
-import pickle         as mod_pickle
-import os.path        as mod_path
-
-import data           as mod_data
+import logging
+import os
+import urllib.request, urllib.parse, urllib.error
+import re
+import pickle
+import os.path
 
 def retrieve_all_files_urls(url):
-    mod_logging.info('Retrieving {0}'.format(url))
-    url_stream = mod_urllib.urlopen(url)
+    logging.info('Retrieving {0}'.format(url))
+    url_stream = urllib.request.urlopen(url)
     contents = url_stream.read()
     url_stream.close()
 
-    url_candidates = mod_re.findall('href="(.*?)"', contents)
+    url_candidates = re.findall('href="(.*?)"', contents)
     urls = {}
 
     for url_candidate in url_candidates:
@@ -41,20 +39,20 @@ def retrieve_all_files_urls(url):
     return urls
 	
 def get_files(url):
-    mod_logging.info('Retrieving {0}'.format(url))
-    url_stream = mod_urllib.urlopen(url)
+    logging.info('Retrieving {0}'.format(url))
+    url_stream = urllib.request.urlopen(url)
     contents = url_stream.read()
     url_stream.close()
 
     result = {}
 
-    url_candidates = mod_re.findall('href="(.*?)"', contents)
+    url_candidates = re.findall('href="(.*?)"', contents)
     for url_candidate in url_candidates:
         if url_candidate.endswith('.hgt.zip'):
             file_url = '{0}/{1}'.format(url, url_candidate)
             result[url_candidate.replace('.zip', '')] = file_url
 
-    mod_logging.info('Found {0} files'.format(len(result)))
+    logging.info('Found {0} files'.format(len(result)))
 
     return result
 
@@ -62,5 +60,5 @@ if __name__ == '__main__':
     latitude = 45.
     longitude = 45.
 
-    print(get_geo_elevation_data())
+    print((get_geo_elevation_data()))
 

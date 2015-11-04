@@ -16,19 +16,19 @@
 
 import pdb
 
-import json     as mod_json
-import os       as mod_os
-import os.path  as mod_path
+import json
+import os
+import os.path
 
-from . import data      as mod_data
-from . import utils     as mod_utils
+from . import data as mod_data
+from . import utils as mod_utils
 from . import retriever as mod_retriever
 
 SRTM1_URL = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM1/'
 SRTM3_URL = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/'
 
-package_location = mod_data.__file__[: mod_data.__file__.rfind(mod_path.sep)]
-DEFAULT_LIST_JSON = package_location + mod_os.sep + 'list.json'
+package_location = mod_data.__file__[: mod_data.__file__.rfind(os.path.sep)]
+DEFAULT_LIST_JSON = package_location + os.sep + 'list.json'
 
 def get_data(srtm1=True, srtm3=True, leave_zipped=False, file_handler=None,
              use_included_urls=True):
@@ -44,11 +44,11 @@ def get_data(srtm1=True, srtm3=True, leave_zipped=False, file_handler=None,
 
     If you need to change the way the files are saved locally (for example if 
     you need to save them locally) -- change the file_handler. See 
-    srtm.utils.FileHandler.
+    srtm.main.FileHandler.
 
     If leave_zipped is True then files will be stored locally as compressed 
     zip files. That means less disk space but more computing space for every 
-    file loaded. 
+    file loaded.
 
     If use_included_urls is True urls to SRTM files included in the library 
     will be used. Set to false if you need to reload them on first run.
@@ -90,17 +90,17 @@ def _get_urls(use_included_urls, file_handler):
         srtm3_files = mod_retriever.retrieve_all_files_urls(SRTM3_URL)
 
         file_handler.write(files_list_file_name,
-                           mod_json.dumps({'srtm1': srtm1_files, 'srtm3': srtm3_files}, sort_keys=True, indent=4))
+                           json.dumps({'srtm1': srtm1_files, 'srtm3': srtm3_files}, sort_keys=True, indent=4))
 
         return srtm1_files, srtm3_files
 
 def _get_urls_json(use_included_urls, file_handler):
     if use_included_urls:
         with open(DEFAULT_LIST_JSON, 'r') as f:
-            return mod_json.loads(f.read())
+            return json.loads(f.read())
 
     contents = file_handler.read(files_list_file_name)
-    return mod_json.loads(contents)
+    return json.loads(contents)
 
 class FileHandler:
     """
@@ -112,20 +112,20 @@ class FileHandler:
         """ The default path to store files. """
         # Local cache path:
         result = ""
-        if mod_os.environ.has_key('HOME'):
-            result = '{0}/.srtm'.format(mod_os.environ['HOME'])
-        elif mod_os.environ.has_key('HOMEPATH'):
-            result = '{0}/.srtm'.format(mod_os.environ['HOMEPATH'])
+        if 'HOME' in os.environ:
+            result = '{0}/.cache/srtm'.format(os.environ['HOME'])
+        elif 'HOMEPATH' in os.environ:
+            result = '{0}/.cache/srtm'.format(os.environ['HOMEPATH'])
         else:
-            raise Error('No default HOME directory found, please specify a path where to store files')
+            raise Exception('No default HOME directory found, please specify a path where to store files')
 
-        if not mod_path.exists(result):
-            mod_os.makedirs(result)
+        if not os.path.exists(result):
+            os.makedirs(result)
 
         return result
 
     def exists(self, file_name):
-        return mod_path.exists('%s/%s' % (self.get_srtm_dir(), file_name))
+        return os.path.exists('%s/%s' % (self.get_srtm_dir(), file_name))
 
     def write(self, file_name, contents):
         with open('%s/%s' % (self.get_srtm_dir(), file_name), 'wb') as f:
