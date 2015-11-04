@@ -378,8 +378,8 @@ class GeoElevationFile:
         assert i < len(self.data) - 1
 
         #logging.debug('{0}, {1} -> {2}'.format(row, column, i))
-        byte1 = self.data[i * 2]
-        byte2 = self.data[i * 2 + 1]
+        byte_1 = self.data[i * 2]
+        byte_2 = self.data[i * 2 + 1]
 
         result = byte_1 * 256 + byte_2
 
