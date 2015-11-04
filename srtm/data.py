@@ -25,7 +25,7 @@ import math as mod_math
 import re as mod_re
 import urllib as mod_urllib
 import os.path as mod_path
-import from io import BytesIO as mod_cstringio
+from io import BytesIO as mod_cstringio
 
 from . import utils as mod_utils
 from . import retriever as mod_retriever
