@@ -157,19 +157,14 @@ class GeoElevationData:
 
     def get_image(self, size, latitude_interval, longitude_interval, max_elevation, 
                   unknown_color = (255, 255, 255, 255), zero_color = (0, 0, 255, 255),
-                  min_color = (0, 0, 0, 255), max_color = (0, 255, 0, 255)):
+                  min_color = (0, 0, 0, 255), max_color = (0, 255, 0, 255),
+                  mode='image'):
         """
-        Returns a PIL image.
+        Returns a numpy array or PIL image.
         """
-        try:
-        	import Image as mod_image
-        	import ImageDraw as mod_imagedraw
-        except ImportError:
-        	from PIL import Image as mod_image
-        	from PIL import ImageDraw as mod_imagedraw
-
-
-        
+        import Image as mod_image
+        import ImageDraw as mod_imagedraw
+        import numpy as np 
 
         if not size or len(size) != 2:
             raise Exception('Invalid size %s' % size)
@@ -188,25 +183,35 @@ class GeoElevationData:
                               (255, 255, 255, 255))
         draw = mod_imagedraw.Draw(image)
 
-        for row in range(height):
-            for column in range(width):
-                latitude  = latitude_from  + float(row) / height * (latitude_to  - latitude_from)
-                longitude = longitude_from + float(column) / height * (longitude_to - longitude_from)
-                elevation = self.get_elevation(latitude, longitude)
+        if mode == 'array':
+            array = np.empty((height,width))
+            for row in range(height):
+                for column in range(width):
+                    latitude  = latitude_from  + float(row) / height * (latitude_to  - latitude_from)
+                    longitude = longitude_from + float(column) / height * (longitude_to - longitude_from)
+                    elevation = self.get_elevation(latitude, longitude)
+                    array[row,column] = elevation
 
-                if elevation == None:
-                    color = unknown_color
-                else:
-                    elevation_coef = elevation / float(max_elevation)
-                    if elevation_coef < 0: elevation_coef = 0
-                    if elevation_coef > 1: elevation_coef = 1
-                    color = mod_utils.get_color_between(min_color, max_color, elevation_coef)
-                    if elevation <= 0:
-                        color = zero_color
+            return array
 
-                draw.point((column, height - row), color)
+        elif mode == 'image':
+            for row in range(height):
+                for column in range(width):
+                    latitude  = latitude_from  + float(row) / height * (latitude_to  - latitude_from)
+                    longitude = longitude_from + float(column) / height * (longitude_to - longitude_from)
+                    elevation = self.get_elevation(latitude, longitude)
+                    if elevation == None:
+                        color = unknown_color
+                    else:
+                        elevation_coef = elevation / float(max_elevation)
+                        if elevation_coef < 0: elevation_coef = 0
+                        if elevation_coef > 1: elevation_coef = 1
+                        color = mod_utils.get_color_between(min_color, max_color, elevation_coef)
+                        if elevation <= 0:
+                            color = zero_color
+                    draw.point((column, height - row), color)
 
-        return image
+            return image
 
     def add_elevations(self, gpx, only_missing=False, smooth=False, gpx_smooth_no=0):
         """
