@@ -16,9 +16,9 @@
 
 import pdb
 
-import json
-import os
-import os.path
+import json     as mod_json
+import os       as mod_os
+import os.path  as mod_ospath
 
 from . import data as mod_data
 from . import utils as mod_utils
@@ -27,8 +27,8 @@ from . import retriever as mod_retriever
 SRTM1_URL = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM1/'
 SRTM3_URL = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/'
 
-package_location = mod_data.__file__[: mod_data.__file__.rfind(os.path.sep)]
-DEFAULT_LIST_JSON = package_location + os.sep + 'list.json'
+package_location = mod_data.__file__[: mod_data.__file__.rfind(mod_os.sep)]
+DEFAULT_LIST_JSON = package_location + mod_os.sep + 'list.json'
 
 def get_data(srtm1=True, srtm3=True, leave_zipped=False, file_handler=None,
              use_included_urls=True):
@@ -56,7 +56,7 @@ def get_data(srtm1=True, srtm3=True, leave_zipped=False, file_handler=None,
     With srtm1 or srtm3 params you can decide which SRTM format to use. Srtm3 
     has a resolution of three arc-seconds (cca 90 meters between points). 
     Srtm1 has a resolution of one arc-second (cca 30 meters). Srtm1 is 
-    available only for the United states. If both srtm1 ans srtm2 are True and 
+    available only for the United states. If both srtm1 ans srtm3 are True and 
     both files are present for a location -- the srtm1 will be used.
     """
     if not file_handler:
@@ -90,17 +90,17 @@ def _get_urls(use_included_urls, file_handler):
         srtm3_files = mod_retriever.retrieve_all_files_urls(SRTM3_URL)
 
         file_handler.write(files_list_file_name,
-                           json.dumps({'srtm1': srtm1_files, 'srtm3': srtm3_files}, sort_keys=True, indent=4))
+                           mod_json.dumps({'srtm1': srtm1_files, 'srtm3': srtm3_files}, sort_keys=True, indent=4))
 
         return srtm1_files, srtm3_files
 
 def _get_urls_json(use_included_urls, file_handler):
     if use_included_urls:
         with open(DEFAULT_LIST_JSON, 'r') as f:
-            return json.loads(f.read())
+            return mod_json.loads(f.read())
 
     contents = file_handler.read(files_list_file_name)
-    return json.loads(contents)
+    return mod_json.loads(contents)
 
 class FileHandler:
     """
@@ -112,20 +112,20 @@ class FileHandler:
         """ The default path to store files. """
         # Local cache path:
         result = ""
-        if 'HOME' in os.environ:
-            result = '{0}/.cache/srtm'.format(os.environ['HOME'])
-        elif 'HOMEPATH' in os.environ:
-            result = '{0}/.cache/srtm'.format(os.environ['HOMEPATH'])
+        if 'HOME' in mod_os.environ:
+            result = mod_os.sep.join([mod_os.environ['HOME'], '.cache', 'srtm'])
+        elif 'HOMEPATH' in mod_os.environ:
+            result = mod_os.sep.join([mod_os.environ['HOMEPATH'], '.cache', 'srtm'])
         else:
             raise Exception('No default HOME directory found, please specify a path where to store files')
 
-        if not os.path.exists(result):
-            os.makedirs(result)
+        if not mod_os.path.exists(result):
+            mod_os.makedirs(result)
 
         return result
 
     def exists(self, file_name):
-        return os.path.exists('%s/%s' % (self.get_srtm_dir(), file_name))
+        return mod_os.path.exists('%s/%s' % (self.get_srtm_dir(), file_name))
 
     def write(self, file_name, contents):
         with open('%s/%s' % (self.get_srtm_dir(), file_name), 'wb') as f:

@@ -20,15 +20,17 @@ Classess containing parsed elevation data.
 
 import pdb
 
-import logging
-import math
-import re
-import io
+import logging as mod_logging
+import math as mod_math
+import re as mod_re
+import os.path as mod_path
 
 from . import utils as mod_utils
 from . import retriever as retriever
 
 import requests as requests
+
+import requests as mod_requests
 
 class GeoElevationData:
     """
@@ -109,12 +111,12 @@ class GeoElevationData:
             #logging.error('No file found: {0}'.format(file_name))
             return None
 
-        r = requests.get(url)
+        r = mod_requests.get(url)
         if r.status_code < 200 or 300 <= r.status_code:
             raise Exception('Cannot retrieve %s' % url)
-        logging.info('Retrieving {0}'.format(url))
+        mod_logging.info('Retrieving {0}'.format(url))
         data = r.content
-        logging.info('Retrieved {0} ({1} bytes)'.format(url, len(data)))
+        mod_logging.info('Retrieved {0} ({1} bytes)'.format(url, len(data)))
 
         if not data:
             return None
@@ -142,20 +144,20 @@ class GeoElevationData:
         else:
             east_west = 'W'
 
-        file_name = '%s%s%s%s.hgt' % (north_south, str(int(abs(math.floor(latitude)))).zfill(2), 
-                                      east_west, str(int(abs(math.floor(longitude)))).zfill(3))
+        file_name = '%s%s%s%s.hgt' % (north_south, str(int(abs(mod_math.floor(latitude)))).zfill(2), 
+                                      east_west, str(int(abs(mod_math.floor(longitude)))).zfill(3))
 
         if not (file_name in self.srtm1_files) and not (file_name in self.srtm3_files):
-            #logging.debug('No file found for ({0}, {1}) (file_name: {2})'.format(latitude, longitude, file_name))
             return None
 
         return file_name
 
     def get_image(self, size, latitude_interval, longitude_interval, max_elevation, 
                   unknown_color = (255, 255, 255, 255), zero_color = (0, 0, 255, 255),
-                  min_color = (0, 0, 0, 255), max_color = (0, 255, 0, 255)):
+                  min_color = (0, 0, 0, 255), max_color = (0, 255, 0, 255),
+                  mode='image'):
         """
-        Returns a PIL image.
+        Returns a numpy array or PIL image.
         """
         try:
             import Image as mod_image
@@ -181,25 +183,37 @@ class GeoElevationData:
                               (255, 255, 255, 255))
         draw = mod_imagedraw.Draw(image)
 
-        for row in range(height):
-            for column in range(width):
-                latitude  = latitude_from  + float(row) / height * (latitude_to  - latitude_from)
-                longitude = longitude_from + float(column) / height * (longitude_to - longitude_from)
-                elevation = self.get_elevation(latitude, longitude)
+        if mode == 'array':
+            array = np.empty((height,width))
+            for row in range(height):
+                for column in range(width):
+                    latitude  = latitude_from  + float(row) / height * (latitude_to  - latitude_from)
+                    longitude = longitude_from + float(column) / height * (longitude_to - longitude_from)
+                    elevation = self.get_elevation(latitude, longitude)
+                    array[row,column] = elevation
 
-                if elevation == None:
-                    color = unknown_color
-                else:
-                    elevation_coef = elevation / float(max_elevation)
-                    if elevation_coef < 0: elevation_coef = 0
-                    if elevation_coef > 1: elevation_coef = 1
-                    color = mod_utils.get_color_between(min_color, max_color, elevation_coef)
-                    if elevation <= 0:
-                        color = zero_color
+            return array
 
-                draw.point((column, height - row), color)
+        elif mode == 'image':
+            for row in range(height):
+                for column in range(width):
+                    latitude  = latitude_from  + float(row) / height * (latitude_to  - latitude_from)
+                    longitude = longitude_from + float(column) / height * (longitude_to - longitude_from)
+                    elevation = self.get_elevation(latitude, longitude)
+                    if elevation == None:
+                        color = unknown_color
+                    else:
+                        elevation_coef = elevation / float(max_elevation)
+                        if elevation_coef < 0: elevation_coef = 0
+                        if elevation_coef > 1: elevation_coef = 1
+                        color = mod_utils.get_color_between(min_color, max_color, elevation_coef)
+                        if elevation <= 0:
+                            color = zero_color
+                    draw.point((column, height - row), color)
 
-        return image
+            return image
+        else:
+            raise Exception('Invalid mode ' + mode)
 
     def add_elevations(self, gpx, only_missing=False, smooth=False, gpx_smooth_no=0):
         """
@@ -295,14 +309,14 @@ class GeoElevationFile:
 
         self.data = data
 
-        square_side = math.sqrt(len(self.data) / 2.)
+        square_side = mod_math.sqrt(len(self.data) / 2.)
         assert square_side == int(square_side), 'Invalid file size: {0} for file {1}'.format(len(self.data), self.file_name)
 
         self.square_side = int(square_side)
 
     def get_row_and_column(self, latitude, longitude):
-        return math.floor((self.latitude + 1 - latitude) * float(self.square_side - 1)), \
-               math.floor((longitude - self.longitude) * float(self.square_side - 1))
+        return mod_math.floor((self.latitude + 1 - latitude) * float(self.square_side - 1)), \
+               mod_math.floor((longitude - self.longitude) * float(self.square_side - 1))
 
     def get_elevation(self, latitude, longitude, approximate=None):
         """
@@ -391,7 +405,7 @@ class GeoElevationFile:
 
     def parse_file_name_starting_position(self):
         """ Returns (latitude, longitude) of lower left point of the file """
-        groups = re.findall('([NS])(\d+)([EW])(\d+)\.hgt', self.file_name)
+        groups = mod_re.findall('([NS])(\d+)([EW])(\d+)\.hgt', self.file_name)
 
         assert groups and len(groups) == 1 and len(groups[0]) == 4, 'Invalid file name {0}'.format(self.file_name)
 
