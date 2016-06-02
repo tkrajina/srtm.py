@@ -212,6 +212,8 @@ class GeoElevationData:
                     draw.point((column, height - row), color)
 
             return image
+        else:
+            raise Exception('Invalid mode ' + mode)
 
     def add_elevations(self, gpx, only_missing=False, smooth=False, gpx_smooth_no=0):
         """
