@@ -6,6 +6,8 @@ See: [http://www2.jpl.nasa.gov/srtm/](http://www2.jpl.nasa.gov/srtm/).
 
 You can see SRTM.py in action on [Trackprofiler (online GPS track editor and organizer)](http://www.trackprofiler.com).
 
+There is also a Golang port of this library: [go-elevations](https://github.com/tkrajina/go-elevations).
+
 ## Usage:
 
     import srtm
