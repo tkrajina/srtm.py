@@ -28,6 +28,7 @@ try:
     import cStringIO as mod_cstringio
 except:
     from io import StringIO as mod_cstringio
+import struct as mod_struct
 
 from . import utils as mod_utils
 from . import retriever as mod_retriever
@@ -393,13 +394,12 @@ class GeoElevationFile:
 
         #mod_logging.debug('{0}, {1} -> {2}'.format(row, column, i))
 
-        byte_1 = ord(self.data[i * 2])
-        byte_2 = ord(self.data[i * 2 + 1])
+        unpacked = mod_struct.unpack(">h", self.data[i * 2 : i * 2 + 2])
+        result = None
+        if unpacked and len(unpacked) == 1:
+            result = unpacked[0]
 
-        result = byte_1 * 256 + byte_2
-
-        if result > 9000:
-            # TODO(TK) try to detect the elevation from neighbour point:
+        if (result is None) or result > 10000 or result < -1000:
             return None
 
         return result

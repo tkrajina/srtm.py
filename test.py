@@ -30,6 +30,10 @@ mod_logging.basicConfig(level=mod_logging.DEBUG,
 
 class Tests(mod_unittest.TestCase):
 
+    def test_dead_sea(self):
+        geo_elevation_data = mod_srtm.get_data()
+        self.assertEqual(-415, geo_elevation_data.get_elevation(31.5, 35.5))
+
     def test_random_points(self):
         geo_elevation_data = mod_srtm.get_data()
         self.assertEqual(63, geo_elevation_data.get_elevation(46., 13.))
