@@ -19,10 +19,11 @@ import pdb
 import logging    as mod_logging
 import math       as mod_math
 import zipfile    as mod_zipfile
+
 try:
-    import cStringIO as mod_cstringio
-except:
-    from io import StringIO as mod_cstringio
+    from StringIO import cStringIO
+except ImportError: # assume this is Python 3
+    from io import BytesIO as cStringIO # looks hacky but we are working with bytes
 
 ONE_DEGREE = 1000. * 10000.8 / 90.
 
@@ -49,7 +50,7 @@ def get_color_between(color1, color2, i):
 
 def zip(contents, file_name):
     mod_logging.debug('Zipping %s bytes' % len(contents))
-    result = mod_cstringio.StringIO()
+    result = cStringIO()
     zip_file = mod_zipfile.ZipFile(result, 'w', mod_zipfile.ZIP_DEFLATED, False)
     zip_file.writestr(file_name, contents)
     zip_file.close()
@@ -59,7 +60,7 @@ def zip(contents, file_name):
 
 def unzip(contents):
     mod_logging.debug('Unzipping %s bytes' % len(contents))
-    zip_file = mod_zipfile.ZipFile(mod_cstringio.StringIO(contents))
+    zip_file = mod_zipfile.ZipFile(cStringIO(contents))
     zip_info_list = zip_file.infolist()
     zip_info = zip_info_list[0]
     result = zip_file.open(zip_info).read()
