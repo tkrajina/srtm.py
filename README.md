@@ -36,7 +36,7 @@ The result on a graph:
 
 ![GPX elevations](http://tkrajina.github.io/srtm.py/gpx_elevations.png)
 
-In gray is the original elevation (taken with an android smartphone).
+In gray is the original elevation (taken with an Android smartphone).
 Blue is raw-srtm-data elevations, in red is the smoothed (approximated) srtm data.
 
 You need [gpxpy](http://github.com/tkrajina/gpxpy) installed in order for this feature to work.
@@ -54,7 +54,7 @@ You can create elevation images with:
 On every elevation requested the library will:
 
  * Check if the SRTM file is stored locally
- * If not -- download it from NASA servers and store locally (in ~/.elevations)
+ * If not -- download it from NASA servers and store locally (in `~/.cache/srtm/`)
  * Parse elevations from it
 
 That's why the first run of your application will always take a few seconds.
@@ -96,7 +96,7 @@ gpxelevations is a utility commandline tool to add/update elevations in a GPS tr
                             elevations only where not yet present)
       -p, --approximate     Approximate elevations with neighbour point elevations
       -s, --smooth          Smooth elevations
-      -c, --calculate       Calculate elevations (but don't change the GPX file
+      -c, --calculate       Calculate elevations (but don't change the GPX file)
       -f FILE, --file FILE  Output filename
       -v, --verbose         Verbose output
 
