@@ -1,3 +1,5 @@
+[![Build Status](https://api.travis-ci.org/tkrajina/srtm.py.svg)](https://travis-ci.org/tkrajina/srtm.py)
+
 # SRTM.py
 
 SRTM.py is a python parser for the Shuttle Radar Topography Mission elevation data.
