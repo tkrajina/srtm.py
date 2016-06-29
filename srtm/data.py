@@ -37,8 +37,8 @@ import requests as mod_requests
 
 class GeoElevationData:
     """
-    The main class with utility methods for elevations. Note that files are 
-    loaded in memory, so if you need to find elevations for multiple points on 
+    The main class with utility methods for elevations. Note that files are
+    loaded in memory, so if you need to find elevations for multiple points on
     the earth -- this will load *many* files in memory!
     """
 
@@ -78,7 +78,7 @@ class GeoElevationData:
         If the file can't be found -- it will be retrieved from the server.
         """
         file_name = self.get_file_name(latitude, longitude)
-		
+
         if not file_name:
             return None
 
@@ -147,7 +147,7 @@ class GeoElevationData:
         else:
             east_west = 'W'
 
-        file_name = '%s%s%s%s.hgt' % (north_south, str(int(abs(mod_math.floor(latitude)))).zfill(2), 
+        file_name = '%s%s%s%s.hgt' % (north_south, str(int(abs(mod_math.floor(latitude)))).zfill(2),
                                       east_west, str(int(abs(mod_math.floor(longitude)))).zfill(3))
 
         if not (file_name in self.srtm1_files) and not (file_name in self.srtm3_files):
@@ -156,7 +156,7 @@ class GeoElevationData:
 
         return file_name
 
-    def get_image(self, size, latitude_interval, longitude_interval, max_elevation, 
+    def get_image(self, size, latitude_interval, longitude_interval, max_elevation,
                   unknown_color = (255, 255, 255, 255), zero_color = (0, 0, 255, 255),
                   min_color = (0, 0, 0, 255), max_color = (0, 255, 0, 255),
                   mode='image'):
@@ -165,7 +165,7 @@ class GeoElevationData:
         """
         import Image as mod_image
         import ImageDraw as mod_imagedraw
-        import numpy as np 
+        import numpy as np
 
         if not size or len(size) != 2:
             raise Exception('Invalid size %s' % size)
@@ -246,7 +246,7 @@ class GeoElevationData:
 
     def _add_interval_elevations(self, gpx, min_interval_length=100):
         """
-        Adds elevation on points every min_interval_length and add missing 
+        Adds elevation on points every min_interval_length and add missing
         elevation between
         """
         for track in gpx.tracks:
@@ -288,13 +288,13 @@ class GeoElevationFile:
     """
     Contains data from a single Shuttle elevation file.
 
-    This class hould not be instantiated without its GeoElevationData because 
+    This class hould not be instantiated without its GeoElevationData because
     it may need elevations from nearby files.
     """
 
     file_name = None
     url = None
-	
+
     latitude = None
     longitude = None
 
@@ -321,7 +321,7 @@ class GeoElevationFile:
 
     def get_elevation(self, latitude, longitude, approximate=None):
         """
-        If approximate is True then only the points from SRTM grid will be 
+        If approximate is True then only the points from SRTM grid will be
         used, otherwise a basic aproximation of nearby points will be calculated.
         """
         if not (self.latitude <= latitude < self.latitude + 1):
@@ -337,17 +337,17 @@ class GeoElevationFile:
             return self.approximation(latitude, longitude)
         else:
             return self.get_elevation_from_row_and_column(int(row), int(column))
-    
+
     def approximation(self, latitude, longitude):
         """
-        Dummy approximation with nearest points. The nearest the neighbour the 
+        Dummy approximation with nearest points. The nearest the neighbour the
         more important will be its elevation.
         """
         d = 1. / self.square_side
         d_meters = d * mod_utils.ONE_DEGREE
 
-        # Since the less the distance => the more important should be the 
-        # distance of the point, we'll use d-distance as importance coef 
+        # Since the less the distance => the more important should be the
+        # distance of the point, we'll use d-distance as importance coef
         # here:
         importance_1 = d_meters - mod_utils.distance(latitude + d, longitude, latitude, longitude)
         elevation_1  = self.geo_elevation_data.get_elevation(latitude + d, longitude, approximate=False)
@@ -360,7 +360,7 @@ class GeoElevationFile:
 
         importance_4 = d_meters - mod_utils.distance(latitude, longitude - d, latitude, longitude)
         elevation_4  = self.geo_elevation_data.get_elevation(latitude, longitude - d, approximate=False)
-        # TODO(TK) Check if coordinates inside the same file, and only the decide if to xall 
+        # TODO(TK) Check if coordinates inside the same file, and only the decide if to xall
         # self.geo_elevation_data.get_elevation or just self.get_elevation
 
         if elevation_1 == None or elevation_2 == None or elevation_3 == None or elevation_4 == None:
@@ -424,6 +424,6 @@ class GeoElevationFile:
 
         self.latitude = latitude
         self.longitude = longitude
-	
+
     def __str__(self):
         return '[{0}:{1}]'.format(self.__class__, self.file_name)

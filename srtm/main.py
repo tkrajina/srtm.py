@@ -35,28 +35,28 @@ def get_data(srtm1=True, srtm3=True, leave_zipped=False, file_handler=None,
     """
     Get the utility object for querying elevation data.
 
-    All data files will be stored in localy (note that it may be 
+    All data files will be stored in localy (note that it may be
     gigabytes of data so clean it from time to time).
 
-    On first run -- all files needed url will be stored and for every next 
-    elevation query if the SRTM file is not found it will be retrieved and 
+    On first run -- all files needed url will be stored and for every next
+    elevation query if the SRTM file is not found it will be retrieved and
     saved.
 
-    If you need to change the way the files are saved locally (for example if 
-    you need to save them locally) -- change the file_handler. See 
+    If you need to change the way the files are saved locally (for example if
+    you need to save them locally) -- change the file_handler. See
     srtm.main.FileHandler.
 
-    If leave_zipped is True then files will be stored locally as compressed 
-    zip files. That means less disk space but more computing space for every 
+    If leave_zipped is True then files will be stored locally as compressed
+    zip files. That means less disk space but more computing space for every
     file loaded.
 
-    If use_included_urls is True urls to SRTM files included in the library 
+    If use_included_urls is True urls to SRTM files included in the library
     will be used. Set to false if you need to reload them on first run.
 
-    With srtm1 or srtm3 params you can decide which SRTM format to use. Srtm3 
-    has a resolution of three arc-seconds (cca 90 meters between points). 
-    Srtm1 has a resolution of one arc-second (cca 30 meters). Srtm1 is 
-    available only for the United states. If both srtm1 ans srtm3 are True and 
+    With srtm1 or srtm3 params you can decide which SRTM format to use. Srtm3
+    has a resolution of three arc-seconds (cca 90 meters between points).
+    Srtm1 has a resolution of one arc-second (cca 30 meters). Srtm1 is
+    available only for the United states. If both srtm1 ans srtm3 are True and
     both files are present for a location -- the srtm1 will be used.
     """
     if not file_handler:
@@ -104,7 +104,7 @@ def _get_urls_json(use_included_urls, file_handler):
 
 class FileHandler:
     """
-    The default file handler. It can be changed if you need to save/read SRTM 
+    The default file handler. It can be changed if you need to save/read SRTM
     files in a database or Amazon S3.
     """
 

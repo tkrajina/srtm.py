@@ -37,7 +37,7 @@ def retrieve_all_files_urls(url):
             urls.update(get_files(files_url))
 
     return urls
-	
+
 def get_files(url):
     mod_logging.info('Retrieving {0}'.format(url))
     url_stream = mod_urllib.urlopen(url)
