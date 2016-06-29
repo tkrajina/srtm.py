@@ -15,8 +15,6 @@
 # limitations under the License.
 
 import logging as mod_logging
-import Image as mod_image
-import ImageDraw as mod_imagedraw
 
 import srtm as mod_srtm
 

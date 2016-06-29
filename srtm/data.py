@@ -18,16 +18,12 @@
 Classess containing parsed elevation data.
 """
 
-import pdb
-
 import logging as mod_logging
 import math as mod_math
 import re as mod_re
-import os.path as mod_path
 import struct as mod_struct
 
 from . import utils as mod_utils
-from . import retriever as mod_retriever
 
 import requests as mod_requests
 
@@ -220,9 +216,6 @@ class GeoElevationData:
 
         if gpx_smooth_no > 0 -- execute gpx.smooth(vertical=True)
         """
-        try: import gpxpy
-        except: raise Exception('gpxpy needed')
-
         if only_missing:
             original_elevations = list(map(lambda point: point.elevation, gpx.walk(only_points=True)))
 
@@ -324,8 +317,6 @@ class GeoElevationFile:
             raise Exception('Invalid latitude %s for file %s' % (latitude, self.file_name))
         if not (self.longitude <= longitude < self.longitude + 1):
             raise Exception('Invalid longitude %s for file %s' % (longitude, self.file_name))
-
-        points = self.square_side ** 2
 
         row, column = self.get_row_and_column(latitude, longitude)
 

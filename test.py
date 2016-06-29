@@ -19,8 +19,6 @@ Run all tests with:
     $ python -m unittest test
 """
 
-import pdb
-
 import logging        as mod_logging
 import unittest as mod_unittest
 import srtm           as mod_srtm

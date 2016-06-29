@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pdb
-
 import logging    as mod_logging
 import math       as mod_math
 import zipfile    as mod_zipfile

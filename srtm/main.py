@@ -14,14 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import pdb
-
 import json     as mod_json
 import os       as mod_os
 import os.path  as mod_path
 
 from . import data      as mod_data
-from . import utils     as mod_utils
 from . import retriever as mod_retriever
 
 SRTM1_URL = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM1/'
@@ -99,6 +96,7 @@ def _get_urls_json(use_included_urls, file_handler):
         with open(DEFAULT_LIST_JSON, 'r') as f:
             return mod_json.loads(f.read())
 
+    files_list_file_name = 'list.json'
     contents = file_handler.read(files_list_file_name)
     return mod_json.loads(contents)
 
