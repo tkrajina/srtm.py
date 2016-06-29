@@ -1,4 +1,4 @@
-[![Build Status](https://api.travis-ci.org/tkrajina/srtm.py.svg)](https://travis-ci.org/tkrajina/srtm.py)
+[![Build Status](https://travis-ci.org/tkrajina/srtm.py.svg?branch=master)](https://travis-ci.org/tkrajina/srtm.py)
 
 # SRTM.py
 
