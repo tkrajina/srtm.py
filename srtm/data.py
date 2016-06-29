@@ -157,7 +157,6 @@ class GeoElevationData:
         """
         import Image as mod_image
         import ImageDraw as mod_imagedraw
-        import numpy as np
 
         if not size or len(size) != 2:
             raise Exception('Invalid size %s' % size)
@@ -177,6 +176,7 @@ class GeoElevationData:
         draw = mod_imagedraw.Draw(image)
 
         if mode == 'array':
+            import numpy as np
             array = np.empty((height,width))
             for row in range(height):
                 for column in range(width):
