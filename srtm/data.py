@@ -24,10 +24,6 @@ import logging as mod_logging
 import math as mod_math
 import re as mod_re
 import os.path as mod_path
-try:
-    import cStringIO as mod_cstringio
-except:
-    from io import StringIO as mod_cstringio
 import struct as mod_struct
 
 from . import utils as mod_utils
