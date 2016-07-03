@@ -13,5 +13,5 @@ python:
  - 3.3
 
 script:
- - pip install requests
+ - pip install .
  - python -m unittest test
