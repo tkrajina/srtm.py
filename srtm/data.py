@@ -155,8 +155,6 @@ class GeoElevationData:
         """
         Returns a numpy array or PIL image.
         """
-        import Image as mod_image
-        import ImageDraw as mod_imagedraw
 
         if not size or len(size) != 2:
             raise Exception('Invalid size %s' % size)
@@ -171,9 +169,6 @@ class GeoElevationData:
         latitude_from,  latitude_to  = latitude_interval
         longitude_from, longitude_to = longitude_interval
 
-        image = mod_image.new('RGBA', (width, height),
-                              (255, 255, 255, 255))
-        draw = mod_imagedraw.Draw(image)
 
         if mode == 'array':
             import numpy as np
@@ -188,6 +183,13 @@ class GeoElevationData:
             return array
 
         elif mode == 'image':
+            import Image as mod_image
+            import ImageDraw as mod_imagedraw
+
+            image = mod_image.new('RGBA', (width, height),
+                              (255, 255, 255, 255))
+            draw = mod_imagedraw.Draw(image)
+
             for row in range(height):
                 for column in range(width):
                     latitude  = latitude_from  + float(row) / height * (latitude_to  - latitude_from)
