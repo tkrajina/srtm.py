@@ -106,7 +106,10 @@ class GeoElevationData:
             #mod_logging.error('No file found: {0}'.format(file_name))
             return None
 
-        r = mod_requests.get(url)
+        try:
+            r = mod_requests.get(url, timeout=5)
+        except mod_requests.exceptions.Timeout:
+            raise Exception('Connection to %s failed (timeout)' % url)
         if r.status_code < 200 or 300 <= r.status_code:
             raise Exception('Cannot retrieve %s' % url)
         mod_logging.info('Retrieving {0}'.format(url))
