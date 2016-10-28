@@ -186,8 +186,10 @@ class GeoElevationData:
             return array
 
         elif mode == 'image':
-            import Image as mod_image
-            import ImageDraw as mod_imagedraw
+            try:    import Image as mod_image
+            except: from PIL import Image as mod_image
+            try:    import ImageDraw as mod_imagedraw
+            except: from PIL import ImageDraw as mod_imagedraw
 
             image = mod_image.new('RGBA', (width, height),
                               (255, 255, 255, 255))
