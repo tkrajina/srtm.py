@@ -10,12 +10,12 @@ import gpxpy as mod_gpxpy
 import srtm as mod_srtm
 
 parser = mod_argparse.ArgumentParser(
-         description='Adds elevation to GPX files')
+         description='Adds elevation to GPX files.')
 
 parser.add_argument('-o', '--overwrite', action='store_true', default=False,
                     help='Overwrite existing elevations (otherwise will add elevations only where not yet present)')
 parser.add_argument('-p', '--approximate', action='store_true', default=False,
-                    help='Approximate elevations with neighbour point elevations')
+                    help='Approximate elevations with neighbour points elevation')
 parser.add_argument('-s', '--smooth', action='store_true', default=False,
                     help='Smooth elevations')
 parser.add_argument('-c', '--calculate', action='store_true', default=False,
