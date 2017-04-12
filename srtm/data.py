@@ -309,6 +309,7 @@ class GeoElevationFile:
         square_side = mod_math.sqrt(len(self.data) / 2.)
         assert square_side == int(square_side), 'Invalid file size: {0} for file {1}'.format(len(self.data), self.file_name)
 
+        self.resolution = 1.0 / (square_side - 1)
         self.square_side = int(square_side)
 
     def get_row_and_column(self, latitude, longitude):
