@@ -316,6 +316,10 @@ class GeoElevationFile:
         return mod_math.floor((self.latitude + 1 - latitude) * float(self.square_side - 1)), \
                mod_math.floor((longitude - self.longitude) * float(self.square_side - 1))
 
+    def get_lat_and_long(self, row, column):
+        return self.latitude + 1 - row *  self.resolution, \
+               self.longitude + column * self.resolution
+
     def get_elevation(self, latitude, longitude, approximate=None):
         """
         If approximate is True then only the points from SRTM grid will be
