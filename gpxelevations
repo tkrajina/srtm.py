@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import pdb
 
 import logging as mod_logging
@@ -43,10 +45,10 @@ for gpx_file in args.gpx_files:
         update_gpx(gpx)
 
         if args.smooth:
-            print 'Smoothing...'
+            print('Smoothing...')
             gpx.smooth(vertical=True, horizontal=False)
             gpx.smooth(vertical=True, horizontal=False)
-            print 'Smoothing... done'
+            print('Smoothing... done')
 
         file_name = args.file
         if not file_name:
@@ -58,5 +60,5 @@ for gpx_file in args.gpx_files:
         with open(file_name, 'w') as output_f:
             output_f.write(gpx.to_xml())
 
-            print
-            print 'Written to %s' % file_name
+            print()
+            print('Written to {}'.format(file_name))
