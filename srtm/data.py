@@ -151,7 +151,7 @@ class GeoElevationData:
 
         return file_name
 
-    def get_image(self, size, latitude_interval, longitude_interval, max_elevation,
+    def get_image(self, size, latitude_interval, longitude_interval, max_elevation, min_elevation=0,
                   unknown_color = (255, 255, 255, 255), zero_color = (0, 0, 255, 255),
                   min_color = (0, 0, 0, 255), max_color = (0, 255, 0, 255),
                   mode='image'):
@@ -195,6 +195,8 @@ class GeoElevationData:
                               (255, 255, 255, 255))
             draw = mod_imagedraw.Draw(image)
 
+            max_elevation -= min_elevation
+
             for row in range(height):
                 for column in range(width):
                     latitude  = latitude_from  + float(row) / height * (latitude_to  - latitude_from)
@@ -203,7 +205,7 @@ class GeoElevationData:
                     if elevation == None:
                         color = unknown_color
                     else:
-                        elevation_coef = elevation / float(max_elevation)
+                        elevation_coef = (elevation - min_elevation) / float(max_elevation)
                         if elevation_coef < 0: elevation_coef = 0
                         if elevation_coef > 1: elevation_coef = 1
                         color = mod_utils.get_color_between(min_color, max_color, elevation_coef)
