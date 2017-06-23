@@ -41,7 +41,7 @@ class GeoElevationData:
     files = None
 
     def __init__(self, srtm1_files, srtm3_files, leave_zipped=False,
-                 file_handler=None):
+                 file_handler=None, batch_mode=False):
         self.srtm1_files = srtm1_files
         self.srtm3_files = srtm3_files
 
@@ -50,6 +50,8 @@ class GeoElevationData:
         self.file_handler = file_handler if file_handler else mod_utils.FileHandler()
 
         self.files = {}
+
+        self.batch_mode = batch_mode
 
     def get_elevation(self, latitude, longitude, approximate=None):
         geo_elevation_file = self.get_file(float(latitude), float(longitude))
@@ -82,7 +84,13 @@ class GeoElevationData:
                 return None
 
             result = GeoElevationFile(file_name, data, self)
-            self.files[file_name] = result
+
+            # Store file (if in batch mode, just keep most recent)
+            if self.batch_mode:
+                self.files = {file_name: result}
+            else:
+                self.files[file_name] = result
+
             return result
 
     def retrieve_or_load_file_data(self, file_name):

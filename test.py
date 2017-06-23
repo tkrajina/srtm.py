@@ -144,3 +144,26 @@ class Tests(mod_unittest.TestCase):
 
         self.assertNotEquals(elevation_with_approximation, elevation_without_approximation)
         self.assertTrue(abs(elevation_with_approximation - elevation_without_approximation) < 30)
+
+    def test_batch_mode(self):
+        
+        # Two pulls that are far enough apart to require multiple files
+
+        # With batch_mode=False, both files should be kept
+        geo_elevation_data = mod_srtm.get_data(batch_mode=False)
+
+        elevation1 = geo_elevation_data.get_elevation(42.3467, 71.0972)
+        self.assertTrue(len(geo_elevation_data.files) == 1)
+
+        elevation2 = geo_elevation_data.get_elevation(43.0382, 87.9298)
+        self.assertTrue(len(geo_elevation_data.files) == 2)
+
+        # With batch_mode=True, only the most recent file should be kept
+        geo_elevation_data = mod_srtm.get_data(batch_mode=True)
+        elevation1 = geo_elevation_data.get_elevation(42.3467, 71.0972)
+        self.assertTrue(len(geo_elevation_data.files) == 1)
+        keys1 = geo_elevation_data.files.keys()
+
+        elevation2 = geo_elevation_data.get_elevation(43.0382, 87.9298)
+        self.assertTrue(len(geo_elevation_data.files) == 1)
+        self.assertFalse(geo_elevation_data.files.keys() == keys1)
