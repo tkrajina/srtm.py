@@ -153,14 +153,17 @@ class Tests(mod_unittest.TestCase):
         geo_elevation_data = mod_srtm.get_data(batch_mode=False)
 
         elevation1 = geo_elevation_data.get_elevation(42.3467, 71.0972)
+        self.assertTrue(elevation1 > 0)
         self.assertTrue(len(geo_elevation_data.files) == 1)
 
         elevation2 = geo_elevation_data.get_elevation(43.0382, 87.9298)
+        self.assertTrue(elevation2 > 0)
         self.assertTrue(len(geo_elevation_data.files) == 2)
 
         # With batch_mode=True, only the most recent file should be kept
         geo_elevation_data = mod_srtm.get_data(batch_mode=True)
         elevation1 = geo_elevation_data.get_elevation(42.3467, 71.0972)
+        self.assertTrue(elevation1 > 0)
         self.assertTrue(len(geo_elevation_data.files) == 1)
         keys1 = geo_elevation_data.files.keys()
 
