@@ -113,6 +113,22 @@ class Tests(mod_unittest.TestCase):
         self.assertEqual(geo_file.get_elevation(47, 13),
                           geo_file.get_elevation(47, 13))
 
+    def test_coordinates_row_col_conversion(self):
+        geo_elevation_data = mod_srtm.get_data()
+        geo_file = geo_elevation_data.get_file(47.0, 13.99)
+
+        print('file:', geo_file)
+
+        r, c = geo_file.get_row_and_column(47, 13)
+        lat, long = geo_file.get_lat_and_long(r, c)
+        self.assertEqual(lat, 47)
+        self.assertEqual(long, 13)
+
+        r, c = geo_file.get_row_and_column(46.5371, 8.1264)
+        lat, long = geo_file.get_lat_and_long(r, c)
+        self.assertAlmostEqual(lat, 46.5371, delta=geo_file.resolution)
+        self.assertAlmostEqual(long, 8.1264, delta=geo_file.resolution)
+
     def test_without_approximation(self):
         geo_elevation_data = mod_srtm.get_data()
 
