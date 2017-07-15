@@ -28,7 +28,7 @@ package_location = mod_data.__file__[: mod_data.__file__.rfind(mod_path.sep)]
 DEFAULT_LIST_JSON = package_location + mod_os.sep + 'list.json'
 
 def get_data(srtm1=True, srtm3=True, leave_zipped=False, file_handler=None,
-             use_included_urls=True):
+             use_included_urls=True, batch_mode=False):
     """
     Get the utility object for querying elevation data.
 
@@ -49,6 +49,12 @@ def get_data(srtm1=True, srtm3=True, leave_zipped=False, file_handler=None,
 
     If use_included_urls is True urls to SRTM files included in the library
     will be used. Set to false if you need to reload them on first run.
+
+    If batch_mode is True, only the most recent file will be stored. This is
+    ideal for situations where you want to use this function to enrich a very
+    large dataset. If your data are spread over a wide geographic area, this
+    setting will make this function slower but will greatly reduce the risk
+    of out-of-memory errors. Default is False.
 
     With srtm1 or srtm3 params you can decide which SRTM format to use. Srtm3
     has a resolution of three arc-seconds (cca 90 meters between points).
@@ -75,7 +81,7 @@ def get_data(srtm1=True, srtm3=True, leave_zipped=False, file_handler=None,
     assert srtm1_files or srtm3_files
 
     return mod_data.GeoElevationData(srtm1_files, srtm3_files, file_handler=file_handler,
-                                     leave_zipped=leave_zipped)
+                                     leave_zipped=leave_zipped, batch_mode=batch_mode)
 
 def _get_urls(use_included_urls, file_handler):
     files_list_file_name = 'list.json'
