@@ -15,7 +15,7 @@
 # limitations under the License.
 
 """
-Classess containing parsed elevation data.
+Classes containing parsed elevation data.
 """
 
 import logging as mod_logging
@@ -63,9 +63,9 @@ class GeoElevationData:
             return None
 
         return geo_elevation_file.get_elevation(
-                float(latitude),
-                float(longitude),
-                approximate)
+            float(latitude),
+            float(longitude),
+            approximate)
 
     def get_file(self, latitude, longitude):
         """
@@ -362,7 +362,7 @@ class GeoElevationFile:
 
         importance_4 = d_meters - mod_utils.distance(latitude, longitude - d, latitude, longitude)
         elevation_4  = self.geo_elevation_data.get_elevation(latitude, longitude - d, approximate=False)
-        # TODO(TK) Check if coordinates inside the same file, and only the decide if to xall
+        # TODO(TK) Check if coordinates inside the same file, and only then decide if to call
         # self.geo_elevation_data.get_elevation or just self.get_elevation
 
         if elevation_1 == None or elevation_2 == None or elevation_3 == None or elevation_4 == None:
@@ -377,7 +377,7 @@ class GeoElevationFile:
         # Normalize importance:
         sum_importances = float(importance_1 + importance_2 + importance_3 + importance_4)
 
-        # Check normallization:
+        # Check normalization:
         assert abs(importance_1 / sum_importances + \
                    importance_2 / sum_importances + \
                    importance_3 / sum_importances + \
