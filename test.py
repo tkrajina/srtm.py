@@ -186,3 +186,6 @@ class Tests(mod_unittest.TestCase):
         elevation2 = geo_elevation_data.get_elevation(43.0382, 87.9298)
         self.assertTrue(len(geo_elevation_data.files) == 1)
         self.assertFalse(geo_elevation_data.files.keys() == keys1)
+
+if __name__ == '__main__':
+    mod_unittest.main()
