@@ -444,7 +444,7 @@ class GeoElevationFile:
         center_lat, center_long = self.get_lat_and_long(row, column)
         if latitude == center_lat and longitude == center_long:
             #return direct elev at point (infinite weight)
-            return self.get_elevation_from_row_and_column(row, column)
+            return self.get_elevation_from_row_and_column(int(row), int(column))
         weights = 0
         elevation = 0
         
@@ -456,8 +456,8 @@ class GeoElevationFile:
                 if cell is not None:
                     #does not need to be meters, anything proportional
                     distance = mod_utils.distance(latitude, longitude,
-                                                  center_lat + offset[0]/(self.square_side-1),
-                                                  center_long + offset[1]/(self.square_side-1))
+                                                  center_lat + float(offset[0])/(self.square_side-1),
+                                                  center_long + float(offset[1])/(self.square_side-1))
                     weights += 1/distance
                     elevation += cell/distance
         return elevation/weights
