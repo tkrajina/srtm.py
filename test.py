@@ -161,6 +161,35 @@ class Tests(mod_unittest.TestCase):
         self.assertNotEquals(elevation_with_approximation, elevation_without_approximation)
         self.assertTrue(abs(elevation_with_approximation - elevation_without_approximation) < 30)
 
+    def test_IDW(self):
+        print("Testing: IDW")
+        geo_elevation_data = mod_srtm.get_data()
+        # tuples of (lat, lon, lowerbound, upperbound)
+        controlpoints = [(44.1756325, -71.5965699, 804, 809), # middle of tile (x,y)
+                         (44, -71.5965699, 521, 526), # left edge (3600, y)
+                         (44.1756325, -71.00025, 148, 152), # bottom edge (x, 0)
+                         (44.99975, -71.5965699, 527, 533), # right edge (0, y)
+                         (44.1756325, -71.99975, 271, 277), # top edge (x, ...)
+                         (44, -71, 139, 139)
+                         ]
+
+        for location in controlpoints:
+            print("Location: {}, {}".format(location[0], location[1]))
+            nearest_neighbor_elevation = geo_elevation_data.get_elevation(location[0], location[1])
+            IDW5_elevation = geo_elevation_data._IDW(location[0], location[1])
+            IDW13_elevation = geo_elevation_data._IDW(location[0], location[1], radius=2)
+            print("Nearest: " + str(nearest_neighbor_elevation))
+            print("Interpolated(5): {}".format(IDW5_elevation))
+            print("Interpolated(13): {}".format(IDW13_elevation))
+            print()
+            self.assertGreaterEqual(IDW5_elevation, location[2])
+            self.assertLessEqual(IDW5_elevation, location[3])
+            self.assertGreaterEqual(IDW13_elevation, location[2])
+            self.assertLessEqual(IDW13_elevation, location[3])
+
+        self.assertRaises(ValueError, geo_elevation_data._IDW, 44, -71, radius=0)
+            
+
     def test_batch_mode(self):
         
         # Two pulls that are far enough apart to require multiple files
@@ -186,3 +215,7 @@ class Tests(mod_unittest.TestCase):
         elevation2 = geo_elevation_data.get_elevation(43.0382, 87.9298)
         self.assertTrue(len(geo_elevation_data.files) == 1)
         self.assertFalse(geo_elevation_data.files.keys() == keys1)
+
+
+if __name__ == '__main__':
+    mod_unittest.main()
