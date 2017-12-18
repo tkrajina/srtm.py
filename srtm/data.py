@@ -68,8 +68,29 @@ class GeoElevationData:
             approximate)
 
     def _IDW(self, latitude, longitude, radius=1):
-        geo_elevation_file = self.get_file(latitude, longitude)
-        return geo_elevation_file._InverseDistanceWeighted(latitude, longitude, radius)
+        """
+        Return the interpolated elevation at a point.
+
+        Load the correct tile for latitude and longitude given.
+        If the tile doesn't exist, return None. Otherwise,
+        call the tile's Inverse Distance Weighted function and
+        return the elevation.
+
+        Args:
+            latitude: float with the latitude in decimal degrees
+            longitude: float with the longitude in decimal degrees
+            radius: int of 1 or 2 indicating the approximate radius
+                of adjacent cells to include
+
+        Returns:
+            a float of the interpolated elevation with the same unit
+            as the .hgt file (meters)
+
+        """
+        tile = self.get_file(latitude, longitude)
+        if tile is None:
+            return None
+        return tile._InverseDistanceWeighted(latitude, longitude, radius)
 
     def get_file(self, latitude, longitude):
         """
@@ -415,7 +436,6 @@ class GeoElevationFile:
         the given point. Any cells referenced by the matrix that are on
         neighboring tiles are ignored.
 
-        
         Args:
             latitude: float of the latitude in decimal degrees
             longitude: float of the longitude in decimal degrees
@@ -424,45 +444,48 @@ class GeoElevationFile:
         Returns:
             a float of the interpolated elevation in the same units as
             the underlying .hgt file (meters)
-        """
 
+        Exceptions:
+            raises a ValueError if an invalid radius is supplied
+
+        """
         if radius == 1:
-            offsetmatrix = (None,(0,1),None,
-                       (-1,0),(0,0),(1,0),
-                       None,(0,-1),None)
+            offsetmatrix = (None, (0, 1), None,
+                           (-1, 0), (0, 0), (1, 0),
+                           None, (0, -1), None)
 
         elif radius == 2:
-            offsetmatrix = (None, None, (0,2), None, None,
-                            None, (-1,1), (0,1), (1,1), None,
-                            (-2,0), (-1,0), (0,0), (1,0), (2,0),
-                            None, (-1,-1), (0,-1), (1,-1), None,
-                            None, None, (0,-2), None, None)
+            offsetmatrix = (None, None, (0, 2), None, None,
+                            None, (-1, 1), (0, 1), (1, 1), None,
+                            (-2, 0), (-1, 0), (0, 0), (1, 0), (2, 0),
+                            None, (-1, -1), (0, -1), (1, -1), None,
+                            None, None, (0, -2), None, None)
         else:
-            raise ValueError("Radius {} invalid, expected 1 or 2".format(radius))
-        
+            raise ValueError("Radius {} invalid, "
+                             "expected 1 or 2".format(radius))
+
         row, column = self.get_row_and_column(latitude, longitude)
         center_lat, center_long = self.get_lat_and_long(row, column)
         if latitude == center_lat and longitude == center_long:
-            #return direct elev at point (infinite weight)
+            # return direct elev at point (infinite weight)
             return self.get_elevation_from_row_and_column(int(row), int(column))
         weights = 0
         elevation = 0
-        
+
         for offset in offsetmatrix:
             if (offset is not None and
                 0 <= row + offset[0] < self.square_side and
                 0 <= column + offset[1] < self.square_side):
-                cell = self.get_elevation_from_row_and_column(int(row + offset[0]), int(column +  offset[1]))
+                cell = self.get_elevation_from_row_and_column(int(row + offset[0]),
+                                                              int(column + offset[1]))
                 if cell is not None:
-                    #does not need to be meters, anything proportional
+                    # does not need to be meters, anything proportional
                     distance = mod_utils.distance(latitude, longitude,
                                                   center_lat + float(offset[0])/(self.square_side-1),
                                                   center_long + float(offset[1])/(self.square_side-1))
                     weights += 1/distance
                     elevation += cell/distance
         return elevation/weights
-                
-        
 
     def get_elevation_from_row_and_column(self, row, column):
         i = row * (self.square_side) + column
