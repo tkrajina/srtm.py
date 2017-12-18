@@ -339,9 +339,9 @@ class GeoElevationFile:
         If approximate is True then only the points from SRTM grid will be
         used, otherwise a basic aproximation of nearby points will be calculated.
         """
-        if not (self.latitude <= latitude < self.latitude + 1):
+        if not (self.latitude - self.resolution <= latitude < self.latitude + 1):
             raise Exception('Invalid latitude %s for file %s' % (latitude, self.file_name))
-        if not (self.longitude <= longitude < self.longitude + 1):
+        if not (self.longitude <= longitude < self.longitude + 1 + self.resolution):
             raise Exception('Invalid longitude %s for file %s' % (longitude, self.file_name))
 
         row, column = self.get_row_and_column(latitude, longitude)
@@ -412,7 +412,8 @@ class GeoElevationFile:
         The matrix size is determined by the radius. A radius of 1 uses
         5 points and a radius of 2 uses 13 points. The matrices are set
         up to use cells adjacent to and including the one that contains
-        the given point.
+        the given point. Any cells referenced by the matrix that are on
+        neighboring tiles are ignored.
 
         
         Args:
@@ -444,7 +445,6 @@ class GeoElevationFile:
         if latitude == center_lat and longitude == center_long:
             #return direct elev at point (infinite weight)
             return self.get_elevation_from_row_and_column(row, column)
-            
         weights = 0
         elevation = 0
         
@@ -452,9 +452,7 @@ class GeoElevationFile:
             if (offset is not None and
                 0 <= row + offset[0] < self.square_side and
                 0 <= column + offset[1] < self.square_side):
-                #print(offset)
                 cell = self.get_elevation_from_row_and_column(row + offset[0], column +  offset[1])
-                #print(cell)
                 if cell is not None:
                     #does not need to be meters, anything proportional
                     distance = mod_utils.distance(latitude, longitude,
