@@ -36,6 +36,7 @@ package_location = __file__[:__file__.rfind(mod_path.sep)]
 SRTM_JSON = package_location + mod_path.sep + 'srtm.json'
 DEFAULT_LIST_JSON = package_location + mod_os.sep + 'list.json'
 
+
 class GeoElevationData:
     """
     The main class with utility methods for elevations. Note that files are
@@ -50,28 +51,27 @@ class GeoElevationData:
     tile_index = {}
     tiles = {}
 
-    def __init__(self, srtm1_files=None, srtm3_files=None, version='v2.1a', fallback=True, leave_zipped=False,
-                 file_handler=None, batch_mode=False, EDuser='', EDpass=''):
+    def __init__(self, srtm1_files=None, srtm3_files=None, version='v2.1a',
+                 fallback=True, leave_zipped=False, file_handler=None,
+                 batch_mode=False, EDuser='', EDpass=''):
 
         # Deprecated parameter handling
         if srtm1_files is not None or srtm3_files is not None:
-            mod_warnings.warn("Use of srtm1_files and srtm3_files is deprecated. Use version instead", DeprecationWarning)
+            mod_warnings.warn("Use of srtm1_files and srtm3_files is "
+                              "deprecated. Use version instead",
+                              DeprecationWarning)
         if srtm1_files is not None:
-            version='v2.1a'
+            version = 'v2.1a'
         elif srtm3_files is not None:
-            version='v2.3a'
+            version = 'v2.3a'
         # End deprecated parameter handling
 
-            
         if not GeoElevationData.tile_index:
             # v1-1, v1-3, v2-1, v2-3, v3
             # bool, str, str, str, bool
             with open(SRTM_JSON, 'r') as indexfile:
                 GeoElevationData.tile_index = mod_json.load(indexfile)
 
-        #self.tiles = {}
-
-            
         self.version = version
         self.leave_zipped = leave_zipped
         self.file_handler = file_handler if file_handler else FileHandler()
@@ -79,7 +79,7 @@ class GeoElevationData:
         self.fallback = fallback
         self.EDuser = EDuser
         self.EDpass = EDpass
-        
+
         # Deprecated init - remove now
         self.srtm1_files = srtm1_files
         self.srtm3_files = srtm3_files
@@ -88,7 +88,7 @@ class GeoElevationData:
 
     def _build_url(self, tilename, version):
         """
-        Return the URL to for the given tilename and version
+        Return the URL to for the given tilename and version.
 
         Use the tile_index to build up the correct URL for each version
         and tilename.
@@ -98,7 +98,7 @@ class GeoElevationData:
             version: str of the SRTM data version and resolution to get.
                 Values can be v1.1a, v1.3a, v2.1a, v2.3a, v3.1a, v3.3a,
                 v3.3as
-                
+
         Returns:
             The URL to the file or None if the tile does not exist
 
@@ -121,7 +121,7 @@ class GeoElevationData:
             if GeoElevationData.tile_index[tilename][3]:
                 return 'https://dds.cr.usgs.gov/srtm/version2_1/SRTM3/{}/{}.hgt.zip'.format(GeoElevationData.tile_index[tilename][3], tilename)
         elif version == 'v2.3as':
-            return None # Find a data source...
+            return None  # Find a data source...
         elif version == 'v1.1a':
             if GeoElevationData.tile_index[tilename][0]:
                 return 'https://dds.cr.usgs.gov/srtm/version1/United_States_1arcsec/1arcsec/{}.hgt.zip'.format(tilename)
@@ -131,7 +131,8 @@ class GeoElevationData:
         else:
             return None
 
-    def get_elevation(self, latitude, longitude, approximate=None, version=None):
+    def get_elevation(self, latitude, longitude, approximate=None,
+                      version=None):
         """
         Return the elevation at the point specified.
 
@@ -145,6 +146,7 @@ class GeoElevationData:
         Returns:
             A float passed back from GeoElevationFile.get_elevation().
             Value should be the elevation of the point in meters.
+
         """
         if version is None:
             version = self.version
@@ -156,7 +158,8 @@ class GeoElevationData:
 
         if not geo_elevation_file:
             if self.fallback and self.fallback_version(version) is not None:
-                return self.get_elevation(latitude, longitude, approximate, self.fallback_version(version))
+                return self.get_elevation(latitude, longitude, approximate,
+                                          self.fallback_version(version))
             else:
                 return None
 
@@ -179,6 +182,7 @@ class GeoElevationData:
 
         Returns:
             str of the next version to try
+
         """
         if version == 'v3.1a':
             return 'v3.3a'
@@ -200,11 +204,12 @@ class GeoElevationData:
 
     def get_file(self, latitude, longitude):
         """
-        Deprecated
+        Deprecated.
 
         If the file can't be found -- it will be retrieved from the server.
         """
-        mod_warnings.warn("Use of get_file is deprecated. Use load_tile and get_tilename instead", DeprecationWarning)
+        mod_warnings.warn("Use of get_file is deprecated. Use load_tile "
+                          "and get_tilename instead", DeprecationWarning)
 
         tilename = self.get_tilename(latitude, longitude)
         version = self.version
@@ -217,11 +222,8 @@ class GeoElevationData:
             version = self.fallback_version(version)
         return tile
 
-
     def retrieve_or_load_file_data(self, file_name):
-        """
-        Deprecated
-        """
+        """Deprecated."""
         mod_warnings.warn("Use of retrieve_or_load_file_data is deprecated. Use load_tile instead", DeprecationWarning)
         
         data_file_name = file_name
@@ -267,7 +269,7 @@ class GeoElevationData:
             self.file_handler.write(data_file_name, data)
 
         return data
-    
+
     def fetch(self, url):
         """
         Download the file.
@@ -298,7 +300,7 @@ class GeoElevationData:
         self.leave_zipped. Load the tile into memory as a
         GeoElevationFile in the GeoElevationData.tiles dictionary.
         Return the tile.
-        
+
         Args:
             tilename: str of the tile (form "N00E000")
             version: str of the SRTM data version and resolution to get.
@@ -306,8 +308,8 @@ class GeoElevationData:
 
         Returns:
             GeoElevationFile containing the requested tile and version.
+
         """
-        
         # Check local cache first
         data = None
         if self.file_handler.exists(tilename + version + '.hgt'):
@@ -322,7 +324,8 @@ class GeoElevationData:
             if url is not None:
                 data = self.fetch(url)
                 if self.leave_zipped:
-                    self.file_handler.write(tilename + version + '.hgt.zip', data)
+                    self.file_handler.write(tilename + version
+                                            + '.hgt.zip', data)
                 data = mod_utils.unzip(data)
                 if not self.leave_zipped:
                     self.file_handler.write(tilename + version + '.hgt', data)
@@ -335,14 +338,10 @@ class GeoElevationData:
             else:
                 self.tiles[tilename + version] = tile
             return tile
-        return None # url is None or download failure
-                
-
+        return None  # url is None or download failure
 
     def get_file_name(self, latitude, longitude):
-        """
-        Deprecated
-        """
+        """Deprecated."""
         mod_warnings.warn("Use of get_file_name is deprecated. Use get_tilename instead", DeprecationWarning)
         file_name = self.get_tilename(latitude, longitude) + '.hgt'
 
@@ -366,6 +365,7 @@ class GeoElevationData:
 
         Returns:
             str of the tilename (may not be a valid tile)
+            
         """
         NS = "N" if latitude >= 0 else "S"
         EW = "E" if longitude >= 0 else "W"
@@ -502,6 +502,7 @@ class GeoElevationData:
             else:
                 point.elevation = None
             n += 1
+
 
 class GeoElevationFile:
     """
@@ -650,6 +651,7 @@ class GeoElevationFile:
     def __str__(self):
         return '[{0}:{1}]'.format(self.__class__, self.file_name)
 
+
 class FileHandler:
     """
     The default file handler. It can be changed if you need to save/read SRTM
@@ -683,17 +685,21 @@ class FileHandler:
         with open('%s/%s' % (self.get_srtm_dir(), file_name), 'rb') as f:
             return f.read()
 
+
 class EarthDataSession(mod_requests.Session):
     """
-    
+    Modify requests.Session to preserve Auth headers.
+
+    Class comes from NASA docs on accessing their data servers.
     """
     AUTH_HOST = 'urs.earthdata.nasa.gov'
+
     def __init__(self, username, password):
         super(EarthDataSession, self).__init__()
         self.auth = (username, password)
- 
-   # Overrides from the library to keep headers when redirected to or from
-   # the NASA auth host.
+
+    # Overrides from the library to keep headers when redirected to or from
+    # the NASA auth host.
     def rebuild_auth(self, prepared_request, response):
         headers = prepared_request.headers
         url = prepared_request.url

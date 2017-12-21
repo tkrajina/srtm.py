@@ -17,6 +17,15 @@
 """
 Run all tests with:
     $ python -m unittest test
+
+For new tests, avoid using the network to download tiles. Use tiles
+already stored in test_files/ when possible. Add additional tiles if needed.
+Tiles with lots of water or very flat terrain compress the most and have
+the smallest file sizes. The fetch function can be easily bypassed with
+localfetchv2_3a. See example in the docstring.
+
+An EarthData account is needed for test_fetch. Get one here:
+https://urs.earthdata.nasa.gov/users/new
 """
 
 import logging as mod_logging
@@ -195,6 +204,7 @@ class Tests(mod_unittest.TestCase):
     def test_batch_mode(self):
         
         # Two pulls that are far enough apart to require multiple files
+        # Points in local test files
         lat1, lon1 = 22.5, -159.5
         lat2, lon2 = 19.5, -154.5
         tilemap = mod_data.GeoElevationData(batch_mode=False)
@@ -236,12 +246,17 @@ class Tests(mod_unittest.TestCase):
         # TODO: Download from ED server with bad credentials
         # TODO: Download bad url
         # super tiny tile is N22W160, should be present in all versions
+        
+        # Get EarthData credentials to run this test:
+        # https://urs.earthdata.nasa.gov/users/new
+        
         print("Testing: fetch")
-        user = 'ptolemytemp' # mod_os.environ.get('SRTMEDUser')
-        password = 'Srtmpass1' # mod_os.environ.get('SRTMEDPass')
+        user = mod_os.environ.get('SRTMEDUser')
+        password = mod_os.environ.get('SRTMEDPass')
         if not user or not password:
             user = input('Username: ')
             password = mod_getpass.getpass()
+            
         #Download from EarthData (ED) server with credentials
         tilemap = mod_data.GeoElevationData(EDuser=user, EDpass=password)
         url = "https://e4ftl01.cr.usgs.gov/MODV6_Dal_D/SRTM/SRTMGL3.003/2000.02.11/N22W160.SRTMGL3.hgt.zip"

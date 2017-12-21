@@ -3,14 +3,33 @@ language: python
 # Use container-based infrastructure
 sudo: false
 
-# Those without lxml wheels first because building lxml is slow
+
 python:
- - 3.5
- - 2.7
  - 2.6
- - 3.4
+ - 2.7
  - 3.3
+ - 3.4
+ - 3.5
+ - 3.6
+
+# Do not use these credentials in your project
+# Get a free account at https://urs.earthdata.nasa.gov/users/new
+env:
+ - SRTMEDUser=srtmpyuser SRTMEDPass=Srtm.py1
+
+install:
+ - pip install requests
+ - pip install coverage
 
 script:
- - pip install requests
- - python -m unittest test
+ - coverage run --source=srtm ./test.py
+
+after_success:
+ - pip install coveralls
+ - coveralls
+
+after_script:
+ - coverage report
+ - pip install pyflakes pycodestyle
+ - pyflakes . | tee >(wc -l)
+ - pycodestyle --statistics --count .
