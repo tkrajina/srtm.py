@@ -22,8 +22,11 @@ import logging as mod_logging
 import math as mod_math
 import re as mod_re
 import struct as mod_struct
+import warnings as mod_warnings
+import json as mod_json
 
 from . import utils as mod_utils
+from srtm import main as mod_main
 
 import requests as mod_requests
 
@@ -37,63 +40,186 @@ class GeoElevationData:
     srtm1_files = None
     srtm3_files = None
 
-    # Lazy loaded files used in current app:
-    files = None
+    # Share memory with other instances
+    tile_index = {}
+    tiles = {}
 
-    def __init__(self, srtm1_files, srtm3_files, leave_zipped=False,
-                 file_handler=None, batch_mode=False):
+    def __init__(self, srtm1_files=None, srtm3_files=None, version='v2.1a', fallback=True, leave_zipped=False,
+                 file_handler=None, batch_mode=False, EDuser='', EDpass=''):
+
+        # Deprecated parameter handling
+        if srtm1_files is not None or srtm3_files is not None:
+            mod_warnings.warn("Use of srtm1_files and srtm3_files is deprecated. Use version instead", DeprecationWarning)
+        if srtm1_files is not None:
+            version='v2.1a'
+        elif srtm3_files is not None:
+            version='v2.3a'
+        # End deprecated parameter handling
+
+            
+        if not GeoElevationData.tile_index:
+            # v1-1, v1-3, v2-1, v2-3, v3
+            # bool, str, str, str, bool
+            with open(mod_main.SRTM_JSON, 'r') as indexfile:
+                GeoElevationData.tile_index = mod_json.load(indexfile)
+
+        #self.tiles = {}
+
+            
+        self.version = version
+        self.leave_zipped = leave_zipped
+        self.file_handler = file_handler if file_handler else mod_utils.FileHandler()
+        self.batch_mode = batch_mode
+        self.fallback = fallback
+        self.EDuser = EDuser
+        self.EDpass = EDpass
+        
+        # Deprecated init - remove now
         self.srtm1_files = srtm1_files
         self.srtm3_files = srtm3_files
-
-        self.leave_zipped = leave_zipped
-
-        self.file_handler = file_handler if file_handler else mod_utils.FileHandler()
-
         self.files = {}
+        # End deprecated init
 
-        self.batch_mode = batch_mode
+        
 
-    def get_elevation(self, latitude, longitude, approximate=None):
-        geo_elevation_file = self.get_file(float(latitude), float(longitude))
+    def _build_url(self, tilename, version):
+        """
+        Return the URL to for the given tilename and version
 
-        #mod_logging.debug('File for ({0}, {1}) -> {2}'.format(
-        #                  latitude, longitude, geo_elevation_file))
+        Use the tile_index to build up the correct URL for each version
+        and tilename.
 
-        if not geo_elevation_file:
+        Args:
+            tilename: str of the tile (form "N00E000")
+            version: str of the SRTM data version and resolution to get.
+                Values can be v1.1a, v1.3a, v2.1a, v2.3a, v3.1a, v3.3a,
+                v3.3as
+                
+        Returns:
+            The URL to the file or None if the tile does not exist
+
+        """
+        if tilename not in GeoElevationData.tile_index:
+            return None
+        if version == 'v3.1a':
+            if GeoElevationData.tile_index[tilename][4]:
+                return 'https://e4ftl01.cr.usgs.gov/MODV6_Dal_D/SRTM/SRTMGL1.003/2000.02.11/{}.SRTMGL1.hgt.zip'.format(tilename)
+        elif version == 'v3.3a':
+            if GeoElevationData.tile_index[tilename][4]:
+                return 'https://e4ftl01.cr.usgs.gov/MODV6_Dal_D/SRTM/SRTMGL3.003/2000.02.11/{}.SRTMGL3.hgt.zip'.format(tilename)
+        elif version == 'v3.3as':
+            if GeoElevationData.tile_index[tilename][4]:
+                return 'https://e4ftl01.cr.usgs.gov/MODV6_Dal_D/SRTM/SRTMGL3S.003/2000.02.11/{}.SRTMGL3.hgt.zip'.format(tilename)
+        elif version == 'v2.1a':
+            if GeoElevationData.tile_index[tilename][2]:
+                return 'https://dds.cr.usgs.gov/srtm/version2_1/SRTM1/Region_{}/{}.hgt.zip'.format(GeoElevationData.tile_index[tilename][2], tilename)
+        elif version == 'v2.3a':
+            if GeoElevationData.tile_index[tilename][3]:
+                return 'https://dds.cr.usgs.gov/srtm/version2_1/SRTM3/{}/{}.hgt.zip'.format(GeoElevationData.tile_index[tilename][3], tilename)
+        elif version == 'v2.3as':
+            return None # Find a data source...
+        elif version == 'v1.1a':
+            if GeoElevationData.tile_index[tilename][0]:
+                return 'https://dds.cr.usgs.gov/srtm/version1/United_States_1arcsec/1arcsec/{}.hgt.zip'.format(tilename)
+        elif version == 'v1.3a':
+            if GeoElevationData.tile_index[tilename][1]:
+                return 'https://dds.cr.usgs.gov/srtm/version1/{}/{}.hgt.zip'.format(GeoElevationData.tile_index[tilename][1], tilename)
+        else:
             return None
 
-        return geo_elevation_file.get_elevation(
-            float(latitude),
-            float(longitude),
-            approximate)
+    def get_elevation(self, latitude, longitude, approximate=None, version=None):
+        """
+        Return the elevation at the point specified.
+
+        Args:
+            latitude: float of the latitude in decimal degrees
+            longitude: float of the longitude in decimal degrees
+            approximate: bool passed to GeoElevationFile.get_elevation
+            version: str of the SRTM data version and resolution to get.
+                Values are determined by _build_url()
+
+        Returns:
+            A float passed back from GeoElevationFile.get_elevation().
+            Value should be the elevation of the point in meters.
+        """
+        if version is None:
+            version = self.version
+        tilename = self.get_tilename(latitude, longitude)
+        if tilename + version in self.tiles:
+            geo_elevation_file = self.tiles[tilename + version]
+        else:
+            geo_elevation_file = self.load_tile(tilename, version)
+
+        if not geo_elevation_file:
+            if self.fallback and self.fallback_version(version) is not None:
+                return self.get_elevation(latitude, longitude, approximate, self.fallback_version(version))
+            else:
+                return None
+
+        return geo_elevation_file.get_elevation(latitude, longitude,
+                                                approximate)
+
+    def fallback_version(self, version):
+        """
+        Return the fallback version.
+
+        The order is defined as:
+        v3.1a -> v3.3a -> v2.3a -> None
+        v3.3as -> v3.3a
+        v2.1a -> v2.3a
+        v2.3as -> v2.3a
+        v1.1a -> v1.3a -> None
+
+        Args:
+            version: str of the current version
+
+        Returns:
+            str of the next version to try
+        """
+        if version == 'v3.1a':
+            return 'v3.3a'
+        elif version == 'v3.3a':
+            return 'v2.3a'
+        elif version == 'v3.3as':
+            return 'v3.3a'
+        elif version == 'v2.1a':
+            return 'v2.3a'
+        elif version == 'v2.3a':
+            return None
+        elif version == 'v2.3as':
+            return 'v2.3a'
+        elif version == 'v1.1a':
+            return 'v1.3a'
+        elif version == 'v1.3a':
+            return None
+        return None
 
     def get_file(self, latitude, longitude):
         """
+        Deprecated
+
         If the file can't be found -- it will be retrieved from the server.
         """
-        file_name = self.get_file_name(latitude, longitude)
+        mod_warnings.warn("Use of get_file is deprecated. Use load_tile and get_tilename instead", DeprecationWarning)
 
-        if not file_name:
-            return None
+        tilename = self.get_tilename(latitude, longitude)
+        version = self.version
 
-        if (file_name in self.files):
-            return self.files[file_name]
-        else:
-            data = self.retrieve_or_load_file_data(file_name)
-            if not data:
-                return None
+        tile = None
+        while tile is None and version is not None:
+            if tilename + version in self.tiles:
+                return self.tiles[tilename + version]
+            tile = self.load_tile(tilename, version)
+            version = self.fallback_version(version)
+        return tile
 
-            result = GeoElevationFile(file_name, data, self)
-
-            # Store file (if in batch mode, just keep most recent)
-            if self.batch_mode:
-                self.files = {file_name: result}
-            else:
-                self.files[file_name] = result
-
-            return result
 
     def retrieve_or_load_file_data(self, file_name):
+        """
+        Deprecated
+        """
+        mod_warnings.warn("Use of retrieve_or_load_file_data is deprecated. Use load_tile instead", DeprecationWarning)
+        
         data_file_name = file_name
         zip_data_file_name = '{0}.zip'.format(file_name)
 
@@ -137,27 +263,110 @@ class GeoElevationData:
             self.file_handler.write(data_file_name, data)
 
         return data
+    
+    def fetch(self, url):
+        """
+        Download the file.
+
+        Download the given URL using the credentials stored in EDuser
+        and EDpass
+
+        Args:
+            url: str of the URL to download
+
+        Returns:
+            Data contained in the file at the requested URL.
+
+        """
+        with EarthDataSession(self.EDuser, self.EDpass) as s:
+            response = s.get(url, timeout=5)
+            response.raise_for_status()
+            data = response.content
+        return data
+
+    def load_tile(self, tilename, version):
+        """
+        Load the requested tile from cache or the network.
+
+        Check to see if the tile needed is stored in local cache.
+        If it isn't, download the tile from the network and save it
+        in the local cache in compressed or uncompressed form based on
+        self.leave_zipped. Load the tile into memory as a
+        GeoElevationFile in the GeoElevationData.tiles dictionary.
+        Return the tile.
+        
+        Args:
+            tilename: str of the tile (form "N00E000")
+            version: str of the SRTM data version and resolution to get.
+                Values are determined by _build_url()
+
+        Returns:
+            GeoElevationFile containing the requested tile and version.
+        """
+        
+        # Check local cache first
+        data = None
+        if self.file_handler.exists(tilename + version + '.hgt'):
+            data = self.file_handler.read(tilename + version + '.hgt')
+        elif self.file_handler.exists(tilename + version + '.hgt.zip'):
+            data = self.file_handler.read(tilename + version + '.hgt.zip')
+            data = mod_utils.unzip(data)
+
+        # Download and save tile if needed
+        if data is None:
+            url = self._build_url(tilename, version)
+            if url is not None:
+                data = self.fetch(url)
+                if self.leave_zipped:
+                    self.file_handler.write(tilename + version + '.hgt.zip', data)
+                data = mod_utils.unzip(data)
+                if not self.leave_zipped:
+                    self.file_handler.write(tilename + version + '.hgt', data)
+
+        # Create GeoElevationFile
+        if data is not None:
+            tile = GeoElevationFile(tilename+'.hgt', data, self)
+            if self.batch_mode:
+                self.tiles = {tilename + version: tile}
+            else:
+                self.tiles[tilename + version] = tile
+            return tile
+        return None # url is None or download failure
+                
+
 
     def get_file_name(self, latitude, longitude):
-        # Decide the file name:
-        if latitude >= 0:
-            north_south = 'N'
-        else:
-            north_south = 'S'
-
-        if longitude >= 0:
-            east_west = 'E'
-        else:
-            east_west = 'W'
-
-        file_name = '%s%s%s%s.hgt' % (north_south, str(int(abs(mod_math.floor(latitude)))).zfill(2),
-                                      east_west, str(int(abs(mod_math.floor(longitude)))).zfill(3))
+        """
+        Deprecated
+        """
+        mod_warnings.warn("Use of get_file_name is deprecated. Use get_tilename instead", DeprecationWarning)
+        file_name = self.get_tilename(latitude, longitude) + '.hgt'
 
         if not (file_name in self.srtm1_files) and not (file_name in self.srtm3_files):
             #mod_logging.debug('No file found for ({0}, {1}) (file_name: {2})'.format(latitude, longitude, file_name))
             return None
 
         return file_name
+
+    def get_tilename(self, latitude, longitude):
+        """
+        Return the tile name for the given coordinates.
+
+        Tiles are 1 deg x 1 deg in size named after the bottom left
+        corner cell. The corner cell is aligned on an interger value.
+        Note that 0.x latitude is N and 0.x longitude is E.
+
+        Args:
+            latitude: float of the latitude in decimal degrees
+            longitude: float of the longitude in decimal degrees
+
+        Returns:
+            str of the tilename (may not be a valid tile)
+        """
+        NS = "N" if latitude >= 0 else "S"
+        EW = "E" if longitude >= 0 else "W"
+        return (NS + str(abs(mod_math.floor(latitude))).zfill(2) +
+                EW + str(abs(mod_math.floor(longitude))).zfill(3))
 
     def get_image(self, size, latitude_interval, longitude_interval, max_elevation, min_elevation=0,
                   unknown_color = (255, 255, 255, 255), zero_color = (0, 0, 255, 255),
@@ -436,3 +645,27 @@ class GeoElevationFile:
 
     def __str__(self):
         return '[{0}:{1}]'.format(self.__class__, self.file_name)
+
+
+class EarthDataSession(mod_requests.Session):
+    """
+    
+    """
+    AUTH_HOST = 'urs.earthdata.nasa.gov'
+    def __init__(self, username, password):
+        super().__init__()
+        self.auth = (username, password)
+ 
+   # Overrides from the library to keep headers when redirected to or from
+   # the NASA auth host.
+    def rebuild_auth(self, prepared_request, response):
+        headers = prepared_request.headers
+        url = prepared_request.url
+        if 'Authorization' in headers:
+            original_parsed = mod_requests.utils.urlparse(response.request.url)
+            redirect_parsed = mod_requests.utils.urlparse(url)
+            if (original_parsed.hostname != redirect_parsed.hostname) and \
+                    redirect_parsed.hostname != self.AUTH_HOST and \
+                    original_parsed.hostname != self.AUTH_HOST:
+                del headers['Authorization']
+        return

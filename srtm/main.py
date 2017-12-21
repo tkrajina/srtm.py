@@ -17,17 +17,21 @@
 import json     as mod_json
 import os       as mod_os
 import os.path  as mod_path
+import warnings as mod_warnings
 
 from . import data      as mod_data
 from . import retriever as mod_retriever
 
+# Deprecated URLs
 SRTM1_URL = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM1/'
 SRTM3_URL = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/'
 
+# TODO Update this section to load data from pkg_resources
 package_location = mod_data.__file__[: mod_data.__file__.rfind(mod_path.sep)]
 DEFAULT_LIST_JSON = package_location + mod_os.sep + 'list.json'
+SRTM_JSON = package_location + mod_os.sep + 'srtm.json'
 
-def get_data(srtm1=True, srtm3=True, leave_zipped=False, file_handler=None,
+def get_data(srtm1=True, srtm3=True, version='v2.1a', fallback=True, leave_zipped=False, file_handler=None,
              use_included_urls=True, batch_mode=False):
     """
     Get the utility object for querying elevation data.
@@ -79,6 +83,9 @@ def get_data(srtm1=True, srtm3=True, leave_zipped=False, file_handler=None,
         srtm3_files = {}
 
     assert srtm1_files or srtm3_files
+
+    if srtm1 or srtm3:
+        mod_warnings.warn("Use of srtm1_files and srtm3_files is deprecated. Use version instead", DeprecationWarning)
 
     return mod_data.GeoElevationData(srtm1_files, srtm3_files, file_handler=file_handler,
                                      leave_zipped=leave_zipped, batch_mode=batch_mode)
