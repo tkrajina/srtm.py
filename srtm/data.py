@@ -366,8 +366,8 @@ class GeoElevationData:
         """
         NS = "N" if latitude >= 0 else "S"
         EW = "E" if longitude >= 0 else "W"
-        return (NS + str(abs(mod_math.floor(latitude))).zfill(2) +
-                EW + str(abs(mod_math.floor(longitude))).zfill(3))
+        return (NS + str(int(abs(mod_math.floor(latitude)))).zfill(2) +
+                EW + str(int(abs(mod_math.floor(longitude)))).zfill(3))
 
     def get_image(self, size, latitude_interval, longitude_interval, max_elevation, min_elevation=0,
                   unknown_color = (255, 255, 255, 255), zero_color = (0, 0, 255, 255),
@@ -654,7 +654,7 @@ class EarthDataSession(mod_requests.Session):
     """
     AUTH_HOST = 'urs.earthdata.nasa.gov'
     def __init__(self, username, password):
-        super().__init__()
+        super(EarthDataSession, self).__init__()
         self.auth = (username, password)
  
    # Overrides from the library to keep headers when redirected to or from

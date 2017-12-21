@@ -282,7 +282,7 @@ class Tests(mod_unittest.TestCase):
         self.assertTrue(tile is tilemap.tiles['N22W160v2.3a'])
         self.assertTrue(tilemap.file_handler.exists('N22W160v2.3a.hgt'))
         # Cleanup
-        mod_os.replace(srtmdir+mod_os.sep+'N22W160v2.3a.hgt', srtmdir+mod_os.sep+'N99W160v2.3a.hgt')
+        mod_os.rename(srtmdir+mod_os.sep+'N22W160v2.3a.hgt', srtmdir+mod_os.sep+'N99W160v2.3a.hgt')
         self.assertFalse(tilemap.file_handler.exists('N22W160v2.3a.hgt'))
 
         # Download zipped
@@ -295,7 +295,7 @@ class Tests(mod_unittest.TestCase):
         self.assertTrue(tile is tilemap.tiles['N22W160v2.3a'])
         self.assertTrue(tilemap.file_handler.exists('N22W160v2.3a.hgt.zip'))
         # Cleanup
-        mod_os.replace(srtmdir+mod_os.sep+'N22W160v2.3a.hgt.zip', srtmdir+mod_os.sep+'N98W160v2.3a.hgt.zip')
+        mod_os.rename(srtmdir+mod_os.sep+'N22W160v2.3a.hgt.zip', srtmdir+mod_os.sep+'N98W160v2.3a.hgt.zip')
         self.assertFalse(tilemap.file_handler.exists('N22W160v2.3a.hgt.zip'))
 
         # Load unzipped from cache
