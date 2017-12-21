@@ -24,14 +24,17 @@ import re as mod_re
 import struct as mod_struct
 import warnings as mod_warnings
 import json as mod_json
+import os as mod_os
 import os.path as mod_path
 
 from . import utils as mod_utils
 
 import requests as mod_requests
 
+# TODO Update this section to load data from pkg_resources
 package_location = __file__[:__file__.rfind(mod_path.sep)]
 SRTM_JSON = package_location + mod_path.sep + 'srtm.json'
+DEFAULT_LIST_JSON = package_location + mod_os.sep + 'list.json'
 
 class GeoElevationData:
     """
@@ -71,7 +74,7 @@ class GeoElevationData:
             
         self.version = version
         self.leave_zipped = leave_zipped
-        self.file_handler = file_handler if file_handler else mod_utils.FileHandler()
+        self.file_handler = file_handler if file_handler else FileHandler()
         self.batch_mode = batch_mode
         self.fallback = fallback
         self.EDuser = EDuser
@@ -647,6 +650,38 @@ class GeoElevationFile:
     def __str__(self):
         return '[{0}:{1}]'.format(self.__class__, self.file_name)
 
+class FileHandler:
+    """
+    The default file handler. It can be changed if you need to save/read SRTM
+    files in a database or Amazon S3.
+    """
+
+    def get_srtm_dir(self):
+        """ The default path to store files. """
+        # Local cache path:
+        result = ""
+        if 'HOME' in mod_os.environ:
+            result = mod_os.sep.join([mod_os.environ['HOME'], '.cache', 'srtm'])
+        elif 'HOMEPATH' in mod_os.environ:
+            result = mod_os.sep.join([mod_os.environ['HOMEPATH'], '.cache', 'srtm'])
+        else:
+            raise Exception('No default HOME directory found, please specify a path where to store files')
+
+        if not mod_path.exists(result):
+            mod_os.makedirs(result)
+
+        return result
+
+    def exists(self, file_name):
+        return mod_path.exists('%s/%s' % (self.get_srtm_dir(), file_name))
+
+    def write(self, file_name, contents):
+        with open('%s/%s' % (self.get_srtm_dir(), file_name), 'wb') as f:
+            f.write(contents)
+
+    def read(self, file_name):
+        with open('%s/%s' % (self.get_srtm_dir(), file_name), 'rb') as f:
+            return f.read()
 
 class EarthDataSession(mod_requests.Session):
     """

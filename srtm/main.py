@@ -26,9 +26,6 @@ from . import retriever as mod_retriever
 SRTM1_URL = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM1/'
 SRTM3_URL = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/'
 
-# TODO Update this section to load data from pkg_resources
-package_location = mod_data.__file__[: mod_data.__file__.rfind(mod_path.sep)]
-DEFAULT_LIST_JSON = package_location + mod_os.sep + 'list.json'
 
 def get_data(srtm1=True, srtm3=True, version='v2.1a', fallback=True, leave_zipped=False, file_handler=None,
              use_included_urls=True, batch_mode=False):
@@ -66,7 +63,7 @@ def get_data(srtm1=True, srtm3=True, version='v2.1a', fallback=True, leave_zippe
     both files are present for a location -- the srtm1 will be used.
     """
     if not file_handler:
-        file_handler = FileHandler()
+        file_handler = mod_data.FileHandler()
 
     if not srtm1 and not srtm3:
         raise Exception('At least one of srtm1 and srtm3 must be True')
@@ -105,42 +102,10 @@ def _get_urls(use_included_urls, file_handler):
 
 def _get_urls_json(use_included_urls, file_handler):
     if use_included_urls:
-        with open(DEFAULT_LIST_JSON, 'r') as f:
+        with open(mod_data.DEFAULT_LIST_JSON, 'r') as f:
             return mod_json.loads(f.read())
 
     files_list_file_name = 'list.json'
     contents = file_handler.read(files_list_file_name)
     return mod_json.loads(contents)
 
-class FileHandler:
-    """
-    The default file handler. It can be changed if you need to save/read SRTM
-    files in a database or Amazon S3.
-    """
-
-    def get_srtm_dir(self):
-        """ The default path to store files. """
-        # Local cache path:
-        result = ""
-        if 'HOME' in mod_os.environ:
-            result = mod_os.sep.join([mod_os.environ['HOME'], '.cache', 'srtm'])
-        elif 'HOMEPATH' in mod_os.environ:
-            result = mod_os.sep.join([mod_os.environ['HOMEPATH'], '.cache', 'srtm'])
-        else:
-            raise Exception('No default HOME directory found, please specify a path where to store files')
-
-        if not mod_path.exists(result):
-            mod_os.makedirs(result)
-
-        return result
-
-    def exists(self, file_name):
-        return mod_path.exists('%s/%s' % (self.get_srtm_dir(), file_name))
-
-    def write(self, file_name, contents):
-        with open('%s/%s' % (self.get_srtm_dir(), file_name), 'wb') as f:
-            f.write(contents)
-
-    def read(self, file_name):
-        with open('%s/%s' % (self.get_srtm_dir(), file_name), 'rb') as f:
-            return f.read()
