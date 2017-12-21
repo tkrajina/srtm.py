@@ -23,6 +23,7 @@ import logging as mod_logging
 import unittest as mod_unittest
 import hashlib as mod_hashlib
 import os as mod_os
+import getpass as mod_getpass
 
 import srtm as mod_srtm
 from srtm import data as mod_data
@@ -234,13 +235,17 @@ class Tests(mod_unittest.TestCase):
     def test_fetch(self):
         # TODO: Download from ED server with bad credentials
         # TODO: Download bad url
-        # super tiny v3.1a tile is N22W160, should be present in all versions
+        # super tiny tile is N22W160, should be present in all versions
         print("Testing: fetch")
-
+        user = 'ptolemytemp' # mod_os.environ.get('SRTMEDUser')
+        password = 'Srtmpass1' # mod_os.environ.get('SRTMEDPass')
+        if not user or not password:
+            user = input('Username: ')
+            password = mod_getpass.getpass()
         #Download from EarthData (ED) server with credentials
-        tilemap = mod_data.GeoElevationData(file_handler=mod_main.FileHandler(), EDuser='ptolemytemp', EDpass='Srtmpass1')
-        url = "https://e4ftl01.cr.usgs.gov/MODV6_Dal_D/SRTM/SRTMGL1.003/2000.02.11/N22W160.SRTMGL1.hgt.zip"
-        self.assertEqual(mod_hashlib.sha1(tilemap.fetch(url)).hexdigest(),'ae65123a0763f9db59fe24b9b8487898cc38dcdc')
+        tilemap = mod_data.GeoElevationData(file_handler=mod_main.FileHandler(), EDuser=user, EDpass=password)
+        url = "https://e4ftl01.cr.usgs.gov/MODV6_Dal_D/SRTM/SRTMGL3.003/2000.02.11/N22W160.SRTMGL3.hgt.zip"
+        self.assertEqual(mod_hashlib.sha1(tilemap.fetch(url)).hexdigest(),'271c36d4295238d84a82682dd7fd1e59120cb83b')
         
         # Download from non-ED server with credentials
         url = 'https://dds.cr.usgs.gov/srtm/version1/Islands/N22W160.hgt.zip'

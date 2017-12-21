@@ -24,11 +24,14 @@ import re as mod_re
 import struct as mod_struct
 import warnings as mod_warnings
 import json as mod_json
+import os.path as mod_path
 
 from . import utils as mod_utils
-from srtm import main as mod_main
 
 import requests as mod_requests
+
+package_location = __file__[:__file__.rfind(mod_path.sep)]
+SRTM_JSON = package_location + mod_path.sep + 'srtm.json'
 
 class GeoElevationData:
     """
@@ -60,7 +63,7 @@ class GeoElevationData:
         if not GeoElevationData.tile_index:
             # v1-1, v1-3, v2-1, v2-3, v3
             # bool, str, str, str, bool
-            with open(mod_main.SRTM_JSON, 'r') as indexfile:
+            with open(SRTM_JSON, 'r') as indexfile:
                 GeoElevationData.tile_index = mod_json.load(indexfile)
 
         #self.tiles = {}
@@ -79,8 +82,6 @@ class GeoElevationData:
         self.srtm3_files = srtm3_files
         self.files = {}
         # End deprecated init
-
-        
 
     def _build_url(self, tilename, version):
         """

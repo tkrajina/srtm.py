@@ -29,7 +29,6 @@ SRTM3_URL = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/'
 # TODO Update this section to load data from pkg_resources
 package_location = mod_data.__file__[: mod_data.__file__.rfind(mod_path.sep)]
 DEFAULT_LIST_JSON = package_location + mod_os.sep + 'list.json'
-SRTM_JSON = package_location + mod_os.sep + 'srtm.json'
 
 def get_data(srtm1=True, srtm3=True, version='v2.1a', fallback=True, leave_zipped=False, file_handler=None,
              use_included_urls=True, batch_mode=False):
