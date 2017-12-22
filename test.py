@@ -208,7 +208,7 @@ class Tests(mod_unittest.TestCase):
         lat1, lon1 = 22.5, -159.5
         lat2, lon2 = 19.5, -154.5
         tilemap = mod_data.GeoElevationData(batch_mode=False)
-        tilemap.fetch = localfetchv2_3a # Use local test files only
+        tilemap._fetch = localfetchv2_3a # Use local test files only
         tilemap.tiles = {} # Flush cache from other tests
         
         # With batch_mode=False, both files should be kept
@@ -220,7 +220,7 @@ class Tests(mod_unittest.TestCase):
 
         # With batch_mode=True, only the most recent file should be kept
         tilemap = mod_data.GeoElevationData(batch_mode=True)
-        tilemap.fetch = localfetchv2_3a # Use local test files only
+        tilemap._fetch = localfetchv2_3a # Use local test files only
         tilemap.get_elevation(lat1, lon1)
         self.assertEqual(len(tilemap.tiles), 1)
         keys1 = tilemap.tiles.keys()
@@ -235,7 +235,7 @@ class Tests(mod_unittest.TestCase):
         tilename = 'N44W072'
         self.assertEqual(tilemap._build_url(tilename, 'v3.1a'),'https://e4ftl01.cr.usgs.gov/MODV6_Dal_D/SRTM/SRTMGL1.003/2000.02.11/N44W072.SRTMGL1.hgt.zip')
         self.assertEqual(tilemap._build_url(tilename, 'v3.3a'),'https://e4ftl01.cr.usgs.gov/MODV6_Dal_D/SRTM/SRTMGL3.003/2000.02.11/N44W072.SRTMGL3.hgt.zip')
-        self.assertEqual(tilemap._build_url(tilename, 'v3.3as'),'https://e4ftl01.cr.usgs.gov/MODV6_Dal_D/SRTM/SRTMGL3S.003/2000.02.11/N44W072.SRTMGL3.hgt.zip')
+        self.assertEqual(tilemap._build_url(tilename, 'v3.3as'),'https://e4ftl01.cr.usgs.gov/MODV6_Dal_D/SRTM/SRTMGL3S.003/2000.02.11/N44W072.SRTMGL3S.hgt.zip')
         self.assertEqual(tilemap._build_url(tilename, 'v2.1a'),'https://dds.cr.usgs.gov/srtm/version2_1/SRTM1/Region_06/N44W072.hgt.zip')
         self.assertEqual(tilemap._build_url(tilename, 'v2.3a'),'https://dds.cr.usgs.gov/srtm/version2_1/SRTM3/North_America/N44W072.hgt.zip')
         #self.assertEqual(tilemap._build_url(tilename, 'v2.3as'),'') No data source implemented
@@ -260,16 +260,16 @@ class Tests(mod_unittest.TestCase):
         #Download from EarthData (ED) server with credentials
         tilemap = mod_data.GeoElevationData(EDuser=user, EDpass=password)
         url = "https://e4ftl01.cr.usgs.gov/MODV6_Dal_D/SRTM/SRTMGL3.003/2000.02.11/N22W160.SRTMGL3.hgt.zip"
-        self.assertEqual(mod_hashlib.sha1(tilemap.fetch(url)).hexdigest(),'271c36d4295238d84a82682dd7fd1e59120cb83b')
+        self.assertEqual(mod_hashlib.sha1(tilemap._fetch(url)).hexdigest(),'271c36d4295238d84a82682dd7fd1e59120cb83b')
         
         # Download from non-ED server with credentials
         url = 'https://dds.cr.usgs.gov/srtm/version1/Islands/N22W160.hgt.zip'
-        self.assertEqual(mod_hashlib.sha1(tilemap.fetch(url)).hexdigest(),'3f0e957caa5c300562fe8328ce54433639e4910e')
+        self.assertEqual(mod_hashlib.sha1(tilemap._fetch(url)).hexdigest(),'3f0e957caa5c300562fe8328ce54433639e4910e')
 
         # Download from non-ED server with bad credentials
         tilemap.EDpass=''
         url = 'https://dds.cr.usgs.gov/srtm/version1/Islands/N22W160.hgt.zip'
-        self.assertEqual(mod_hashlib.sha1(tilemap.fetch(url)).hexdigest(),'3f0e957caa5c300562fe8328ce54433639e4910e')
+        self.assertEqual(mod_hashlib.sha1(tilemap._fetch(url)).hexdigest(),'3f0e957caa5c300562fe8328ce54433639e4910e')
 
     def test_load_tile(self):
 
@@ -278,7 +278,7 @@ class Tests(mod_unittest.TestCase):
         tilename = 'N22W160'
         version = 'v2.3a'
         tilemap = mod_data.GeoElevationData()
-        tilemap.fetch = localfetchv2_3a # Use local test files only
+        tilemap._fetch = localfetchv2_3a # Use local test files only
         srtmdir = tilemap.file_handler.get_srtm_dir()
         # Clean cache
         if tilemap.file_handler.exists(tilename+version+'.hgt'):
@@ -290,7 +290,7 @@ class Tests(mod_unittest.TestCase):
 
         # Download unzipped
         self.assertFalse('N22W160v2.3a' in tilemap.tiles)
-        tile = tilemap.load_tile(tilename, version)
+        tile = tilemap._load_tile(tilename, version)
         self.assertEqual(tile.latitude, 22)
         self.assertEqual(tile.longitude, -160)
         self.assertEqual(mod_hashlib.sha1(tile.data).hexdigest(),'29862497be67be942b323a65a2e400b941ff4a85')
@@ -303,7 +303,7 @@ class Tests(mod_unittest.TestCase):
         # Download zipped
         tilemap.leave_zipped = True
         tilemap.tiles = {}
-        tile = tilemap.load_tile(tilename, version)
+        tile = tilemap._load_tile(tilename, version)
         self.assertEqual(tile.latitude, 22)
         self.assertEqual(tile.longitude, -160)
         self.assertEqual(mod_hashlib.sha1(tile.data).hexdigest(),'29862497be67be942b323a65a2e400b941ff4a85')
@@ -315,7 +315,7 @@ class Tests(mod_unittest.TestCase):
 
         # Load unzipped from cache
         self.assertFalse('N99W160v2.3a' in tilemap.tiles)
-        tile = tilemap.load_tile('N99W160', version) #Invalid tile, only in cache
+        tile = tilemap._load_tile('N99W160', version) #Invalid tile, only in cache
         self.assertEqual(tile.latitude, 99)
         self.assertEqual(tile.longitude, -160)
         self.assertEqual(mod_hashlib.sha1(tile.data).hexdigest(),'29862497be67be942b323a65a2e400b941ff4a85')
@@ -326,7 +326,7 @@ class Tests(mod_unittest.TestCase):
 
         # Load zipped from cache
         self.assertFalse('N98W160v2.3a' in tilemap.tiles)
-        tile = tilemap.load_tile('N98W160', version) #Invalid tile, only in cache
+        tile = tilemap._load_tile('N98W160', version) #Invalid tile, only in cache
         self.assertEqual(tile.latitude, 98)
         self.assertEqual(tile.longitude, -160)
         self.assertEqual(mod_hashlib.sha1(tile.data).hexdigest(),'29862497be67be942b323a65a2e400b941ff4a85')
@@ -336,20 +336,20 @@ class Tests(mod_unittest.TestCase):
         mod_os.remove(srtmdir+mod_os.sep+'N98W160v2.3a.hgt.zip')
         
         # Check invalid tile
-        self.assertTrue(tilemap.load_tile('N99W999', version) is None) 
+        self.assertTrue(tilemap._load_tile('N99W999', version) is None) 
 
     def test_get_tilename(self):
         print("Testing: get_tilename")
         tilemap = mod_data.GeoElevationData()
         # Each quadrant
-        self.assertEqual("N01E001", tilemap.get_tilename(1.5, 1.5))
-        self.assertEqual("N01W002", tilemap.get_tilename(1.5, -1.5))
-        self.assertEqual("S02E001", tilemap.get_tilename(-1.5, 1.5))
-        self.assertEqual("S02W002", tilemap.get_tilename(-1.5, -1.5))
+        self.assertEqual("N01E001", tilemap._get_tilename(1.5, 1.5))
+        self.assertEqual("N01W002", tilemap._get_tilename(1.5, -1.5))
+        self.assertEqual("S02E001", tilemap._get_tilename(-1.5, 1.5))
+        self.assertEqual("S02W002", tilemap._get_tilename(-1.5, -1.5))
         # Equator and Prime Meridian
-        self.assertEqual("N00E001", tilemap.get_tilename(0, 1.5))
-        self.assertEqual("N01E000", tilemap.get_tilename(1.5, 0))
-        self.assertEqual("N00E000", tilemap.get_tilename(0, 0))       
+        self.assertEqual("N00E001", tilemap._get_tilename(0, 1.5))
+        self.assertEqual("N01E000", tilemap._get_tilename(1.5, 0))
+        self.assertEqual("N00E000", tilemap._get_tilename(0, 0))       
 
     def test_fallback(self):
         print("Testing: fallback")
@@ -371,11 +371,11 @@ class Tests(mod_unittest.TestCase):
         print("Testing: get_elevation")
         # Setup
         tilemap = mod_data.GeoElevationData()
-        tilemap.fetch = localfetchv2_3a # Use local test files only
+        tilemap._fetch = localfetchv2_3a # Use local test files only
         lat1, lon1 = -15.3354073, 166.7061276 # No v2_1a data, v2_3a only
         lat2, lon2 = -98.3354073, 0.7061276 # Shifted lat1 and lon1 to invalid
         lat3, lon3 = 40, -36 # No tile (middle of ocean)
-        tilename1 = tilemap.get_tilename(lat1, lon1)
+        tilename1 = tilemap._get_tilename(lat1, lon1)
 
         # Default fallback is True, default version is v2.1a, so v2.1a -> v2.3a
         self.assertFalse(tilename1 + 'v2.1a' in tilemap.tiles)
@@ -393,6 +393,10 @@ class Tests(mod_unittest.TestCase):
         tilemap.tiles['S99E000v2.3a'].latitude = -99.0
         tilemap.tiles['S99E000v2.3a'].longitude = 0.0
         self.assertEqual(tilemap.get_elevation(lat2, lon2, version='v2.3a'), 794)
+
+        # Verify data sharing between instances
+        newmap = mod_data.GeoElevationData()
+        self.assertEqual(newmap.get_elevation(lat2, lon2, version='v2.3a'), 794)
         # Cleanup
         del tilemap.tiles['S99E000v2.3a']
         
@@ -406,8 +410,6 @@ class Tests(mod_unittest.TestCase):
 
         # Test version is invalid
         self.assertTrue(tilemap.get_elevation(lat1, lon1, version='blah') is None)
-
-        
 
 if __name__ == '__main__':
     mod_unittest.main()
