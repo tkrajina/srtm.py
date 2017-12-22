@@ -339,7 +339,7 @@ class Tests(mod_unittest.TestCase):
         self.assertTrue(tilemap.load_tile('N99W999', version) is None) 
 
     def test_get_tilename(self):
-        print("Testing: get_filename")
+        print("Testing: get_tilename")
         tilemap = mod_data.GeoElevationData()
         # Each quadrant
         self.assertEqual("N01E001", tilemap.get_tilename(1.5, 1.5))
