@@ -208,7 +208,7 @@ class GeoElevationData:
             for row in range(height):
                 for column in range(width):
                     latitude  = latitude_from  + float(row) / height * (latitude_to  - latitude_from)
-                    longitude = longitude_from + float(column) / height * (longitude_to - longitude_from)
+                    longitude = longitude_from + float(column) / width * (longitude_to - longitude_from)
                     elevation = self.get_elevation(latitude, longitude)
                     if elevation == None:
                         color = unknown_color
