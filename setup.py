@@ -32,7 +32,7 @@ mod_distutilscore.setup(
         "Programming Language :: Python",
         "Programming Language :: Python :: 2",
     ],
-    requires=['requests'],
+    install_requires=['requests'],
     scripts=['gpxelevations']
 )
 
