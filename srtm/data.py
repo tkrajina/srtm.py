@@ -265,7 +265,9 @@ class GeoElevationData:
             self._add_sampled_elevations(gpx)
         else:
             for point in gpx.walk(only_points=True):
-                point.elevation = self.get_elevation(point.latitude, point.longitude)
+                ele = self.get_elevation(point.latitude, point.longitude)
+                if ele is not None:
+                    point.elevation = ele
 
         for i in range(gpx_smooth_no):
             gpx.smooth(vertical=True, horizontal=False)
