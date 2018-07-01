@@ -34,6 +34,12 @@ class Tests(mod_unittest.TestCase):
         geo_elevation_data = mod_srtm.get_data()
         self.assertEqual(-415, geo_elevation_data.get_elevation(31.5, 35.5))
 
+    def test_over_60(self):
+        geo_elevation_data = mod_srtm.get_data()
+        self.assertTrue(geo_elevation_data.get_elevation(55., 55.) > 0)
+        self.assertEqual(None, geo_elevation_data.get_elevation(65., 65.))
+        self.assertEqual(None, geo_elevation_data.get_elevation(75., 75.))
+
     def test_random_points(self):
         geo_elevation_data = mod_srtm.get_data()
         self.assertEqual(63, geo_elevation_data.get_elevation(46., 13.))
