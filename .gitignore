@@ -1,4 +1,6 @@
+.vscode/*
 *.tar
+*.zip
 *.pyc
 *.swp
 *.swo
@@ -9,6 +11,5 @@ MANIFEST
 build/
 dist/
 htmlcov/
-
 SRTM.py.egg-info/
 .coverage

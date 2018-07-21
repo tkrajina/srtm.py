@@ -10,9 +10,10 @@ check-all-commited:
 	    git status; \
 	    exit 1; \
 	fi
-pypi-upload: check-all-commited
-	python setup.py register
-	python setup.py sdist upload
+pypi-upload: check-all-commited test 
+	rm -Rf dist/*
+	python setup.py sdist
+	twine upload dist/*
 create-sample-images:
 	python sample_images.py
 	python gpx_sample_images.py

@@ -3,8 +3,6 @@
 
 from __future__ import print_function
 
-import pdb
-
 import logging as mod_logging
 import argparse as mod_argparse
 import gpxpy as mod_gpxpy

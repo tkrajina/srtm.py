@@ -34,7 +34,7 @@ import hashlib as mod_hashlib
 import os as mod_os
 import getpass as mod_getpass
 
-import srtm as mod_srtm
+import srtm           as mod_srtm
 from srtm import data as mod_data
 from srtm import main as mod_main
 
@@ -71,6 +71,12 @@ class Tests(mod_unittest.TestCase):
     def test_dead_sea(self):
         geo_elevation_data = mod_srtm.get_data()
         self.assertEqual(-415, geo_elevation_data.get_elevation(31.5, 35.5))
+
+    def test_over_60(self):
+        geo_elevation_data = mod_srtm.get_data()
+        self.assertTrue(geo_elevation_data.get_elevation(55., 55.) > 0)
+        self.assertEqual(None, geo_elevation_data.get_elevation(65., 65.))
+        self.assertEqual(None, geo_elevation_data.get_elevation(75., 75.))
 
     def test_random_points(self):
         geo_elevation_data = mod_srtm.get_data()
@@ -200,6 +206,60 @@ class Tests(mod_unittest.TestCase):
 
         self.assertNotEquals(elevation_with_approximation, elevation_without_approximation)
         self.assertTrue(abs(elevation_with_approximation - elevation_without_approximation) < 30)
+
+    def test_IDW(self):
+        print("Testing: IDW")
+
+        # Setup with local tile
+        with open("test_files/N44W072.hgt","rb") as hgtfile:
+            hgt = hgtfile.read()
+        tilemap = mod_data.GeoElevationData({},{}, file_handler=mod_main.FileHandler())
+        tile = mod_data.GeoElevationFile('N44W072.hgt', hgt, tilemap)
+        tilemap.srtm3_files["N44W072.hgt"] = ""
+        tilemap.files["N44W072.hgt"] = tile
+        lat, long = 44.1756325, -71.5965699
+        elevation = tilemap._IDW(lat, long)
+        print("Location: {}, {}".format(lat, long))
+        print("Elevation: {}".format(elevation))
+        print()
+        self.assertLessEqual(elevation, 814)
+        self.assertGreaterEqual(elevation, 801)
+        self.assertTrue(tilemap._IDW(-47.0, -13.99) is None)
+        
+
+    def test_InverseDistanceWeighted(self):
+        print("Testing: InverseDistanceWeighted")
+
+        # Setup minimal tile config
+        with open("test_files/N44W072.hgt","rb") as hgtfile:
+            hgt = hgtfile.read()
+        tilemap = mod_data.GeoElevationData({},{}, file_handler=mod_main.FileHandler())
+        tile = mod_data.GeoElevationFile('N44W072.hgt', hgt, tilemap)
+
+        # tuples of (lat, lon, lowerbound, upperbound)
+        controlpoints = [(44.1756325, -71.5965699, 801, 814), # middle of tile (x,y)
+                         (44, -71.5965699, 520, 532), # bottom edge (1200, y)
+                         (44.1756325, -70.99975, 148, 152), # right edge (x, 1200)
+                         (44.99975, -71.5965699, 525, 538), # top edge (0, y)
+                         (44.1756325, -71.99975, 272, 279), # left edge (x, 0)
+                         (44, -72, 341, 341)] # Exact cell coordinates, no interpolation
+
+        for location in controlpoints:
+            print("Location: {}, {}".format(location[0], location[1]))
+            nearest_neighbor_elevation = tile.get_elevation(location[0], location[1])
+            IDW5_elevation = tile._InverseDistanceWeighted(location[0], location[1])
+            IDW13_elevation = tile._InverseDistanceWeighted(location[0], location[1], radius=2)
+            print("Nearest: " + str(nearest_neighbor_elevation))
+            print("Interpolated(5): {}".format(IDW5_elevation))
+            print("Interpolated(13): {}".format(IDW13_elevation))
+            print()
+            self.assertGreaterEqual(IDW5_elevation, location[2])
+            self.assertLessEqual(IDW5_elevation, location[3])
+            self.assertGreaterEqual(IDW13_elevation, location[2])
+            self.assertLessEqual(IDW13_elevation, location[3])
+
+        self.assertRaises(ValueError, tile._InverseDistanceWeighted, 44, -71, radius=0)
+            
 
     def test_batch_mode(self):
         
@@ -367,7 +427,6 @@ class Tests(mod_unittest.TestCase):
         
 
     def test_get_elevation(self):
-        
         print("Testing: get_elevation")
         # Setup
         tilemap = mod_data.GeoElevationData()

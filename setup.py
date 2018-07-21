@@ -19,7 +19,7 @@ import distutils.core as mod_distutilscore
 
 mod_distutilscore.setup(
     name = 'SRTM.py',
-    version = '0.3.2',
+    version = '0.3.4',
     description = 'Python parser for the Shuttle Radar Topography Mission elevation data',
     license = 'Apache License, Version 2.0',
     author = 'Tomo Krajina',
@@ -32,7 +32,7 @@ mod_distutilscore.setup(
         "Programming Language :: Python",
         "Programming Language :: Python :: 2",
     ],
-    requires=['requests'],
+    install_requires=['requests'],
     scripts=['gpxelevations']
 )
 

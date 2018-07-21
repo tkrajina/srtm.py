@@ -15,8 +15,6 @@
 # limitations under the License.
 
 import json     as mod_json
-import os       as mod_os
-import os.path  as mod_path
 import warnings as mod_warnings
 
 from . import data      as mod_data
