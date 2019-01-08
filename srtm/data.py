@@ -118,13 +118,13 @@ class GeoElevationData:
 
         """
         # Deprecated parameter handling
-        if srtm1_files is not None or srtm3_files is not None:
+        if srtm1_files or srtm3_files:
             mod_warnings.warn("Use of srtm1_files and srtm3_files is "
                               "deprecated. Use version instead",
                               DeprecationWarning)
-        if srtm1_files is not None:
+        if srtm1_files:
             version = 'v2.1a'
-        elif srtm3_files is not None:
+        elif srtm3_files:
             version = 'v2.3a'
         # End deprecated parameter handling
 

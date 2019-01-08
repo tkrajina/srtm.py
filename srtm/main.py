@@ -27,7 +27,8 @@ SRTM3_URL = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/'
 
 def get_data(srtm1=None, srtm3=None, version='v2.1a', fallback=True,
              leave_zipped=False, file_handler=None,
-             use_included_urls=True, batch_mode=False):
+             use_included_urls=True, batch_mode=False,
+             EDuser='', EDpass=''):
     """
     Get the utility object for querying elevation data.
 
@@ -79,8 +80,8 @@ def get_data(srtm1=None, srtm3=None, version='v2.1a', fallback=True,
     if not srtm1: srtm1_files = {}
     if not srtm3: srtm3_files = {}
 
-    return mod_data.GeoElevationData(srtm1_files, srtm3_files, file_handler=file_handler,
-                                     leave_zipped=leave_zipped, batch_mode=batch_mode)
+    return mod_data.GeoElevationData(srtm1_files, srtm3_files, version=version, file_handler=file_handler,
+                                     leave_zipped=leave_zipped, batch_mode=batch_mode, EDuser=EDuser, EDpass=EDpass)
 
 def _get_urls(use_included_urls, file_handler):
     files_list_file_name = 'list.json'
