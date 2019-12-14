@@ -13,3 +13,4 @@ dist/
 htmlcov/
 SRTM.py.egg-info/
 .coverage
+.mypy_cache/

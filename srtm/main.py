@@ -21,14 +21,16 @@ import os.path  as mod_path
 from . import data      as mod_data
 from . import retriever as mod_retriever
 
+from typing import *
+
 SRTM1_URL = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM1/'
 SRTM3_URL = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/'
 
 package_location = mod_data.__file__[: mod_data.__file__.rfind(mod_path.sep)]
 DEFAULT_LIST_JSON = package_location + mod_os.sep + 'list.json'
 
-def get_data(srtm1=True, srtm3=True, leave_zipped=False, file_handler=None,
-             use_included_urls=True, batch_mode=False):
+def get_data(srtm1: bool=True, srtm3: bool=True, leave_zipped: bool=False, file_handler: Optional["FileHandler"]=None,
+             use_included_urls: bool=True, batch_mode: bool=False) -> mod_data.GeoElevationData:
     """
     Get the utility object for querying elevation data.
 
@@ -83,7 +85,7 @@ def get_data(srtm1=True, srtm3=True, leave_zipped=False, file_handler=None,
     return mod_data.GeoElevationData(srtm1_files, srtm3_files, file_handler=file_handler,
                                      leave_zipped=leave_zipped, batch_mode=batch_mode)
 
-def _get_urls(use_included_urls, file_handler):
+def _get_urls(use_included_urls: bool, file_handler: "FileHandler") -> Tuple[Dict[str, str], Dict[str, str]]:
     files_list_file_name = 'list.json'
     try:
         urls_json = _get_urls_json(use_included_urls, file_handler)
@@ -97,7 +99,7 @@ def _get_urls(use_included_urls, file_handler):
 
         return srtm1_files, srtm3_files
 
-def _get_urls_json(use_included_urls, file_handler):
+def _get_urls_json(use_included_urls: bool, file_handler: "FileHandler") -> Any:
     if use_included_urls:
         with open(DEFAULT_LIST_JSON, 'r') as f:
             return mod_json.loads(f.read())
@@ -112,7 +114,7 @@ class FileHandler:
     files in a database or Amazon S3.
     """
 
-    def get_srtm_dir(self):
+    def get_srtm_dir(self) -> str:
         """ The default path to store files. """
         # Local cache path:
         result = ""
@@ -128,13 +130,13 @@ class FileHandler:
 
         return result
 
-    def exists(self, file_name):
+    def exists(self, file_name: str) -> bool:
         return mod_path.exists('%s/%s' % (self.get_srtm_dir(), file_name))
 
-    def write(self, file_name, contents):
+    def write(self, file_name: str, contents: Any) -> None:
         with open('%s/%s' % (self.get_srtm_dir(), file_name), 'wb') as f:
             f.write(contents)
 
-    def read(self, file_name):
+    def read(self, file_name: str) -> bytes:
         with open('%s/%s' % (self.get_srtm_dir(), file_name), 'rb') as f:
             return f.read()

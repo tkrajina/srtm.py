@@ -1,15 +1,17 @@
-import gpxpy as mod_gpxpy
-import cartesius.main as mod_cartesius
-import cartesius.charts as mod_charts
-import cartesius.elements as mod_elements
+import gpxpy as mod_gpxpy # type: ignore
+import cartesius.main as mod_cartesius # type: ignore
+import cartesius.charts as mod_charts # type: ignore
+import cartesius.elements as mod_elements # type: ignore
 import logging as mod_logging
 import srtm as mod_srtm
+
+from typing import *
 
 mod_logging.basicConfig(level=mod_logging.DEBUG,
                         format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
 
-def get_line(gpx, color, transparency_mask=None):
-    def f():
+def get_line(gpx: Any, color: Any, transparency_mask: Any=None) -> Any:
+    def f() -> Any:
         previous_point = None
         length = 0
         for point in gpx.walk(only_points=True):
@@ -20,7 +22,7 @@ def get_line(gpx, color, transparency_mask=None):
 
     return mod_charts.LineChart(data=f, color=color, transparency_mask=transparency_mask)
 
-def sample_gpx():
+def sample_gpx() -> Any:
     return mod_gpxpy.parse(open('sample_files/setnjica-kod-karojbe.gpx'))
 
 coordinate_system = mod_cartesius.CoordinateSystem(bounds=(-300, 6800, -40, 480))

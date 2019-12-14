@@ -1,7 +1,7 @@
 GIT_PORCELAIN_STATUS=$(shell git status --porcelain)
 
 test:
-	pyflakes .
+	mypy --strict .
 	python -m unittest test
 check-all-commited:
 	if [ -n "$(GIT_PORCELAIN_STATUS)" ]; \

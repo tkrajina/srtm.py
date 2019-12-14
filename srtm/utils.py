@@ -18,35 +18,39 @@ import logging    as mod_logging
 import math       as mod_math
 import zipfile    as mod_zipfile
 
-try:
-    from StringIO import cStringIO
-except ImportError: # assume this is Python 3
-    from io import BytesIO as cStringIO # looks hacky but we are working with bytes
+from io import BytesIO as cStringIO # looks hacky but we are working with bytes
+from typing import *
 
 ONE_DEGREE = 1000. * 10000.8 / 90.
 
-def distance(latitude_1, longitude_1, latitude_2, longitude_2):
+class Color(NamedTuple):
+    red: int
+    green: int
+    blue: int
+    alpha: int
+
+def distance(latitude_1: float, longitude_1: float, latitude_2: float, longitude_2: float) -> float:
     """
     Distance between two points.
     """
-
     coef = mod_math.cos(latitude_1 / 180. * mod_math.pi)
     x = latitude_1 - latitude_2
     y = (longitude_1 - longitude_2) * coef
 
     return mod_math.sqrt(x * x + y * y) * ONE_DEGREE
 
-def get_color_between(color1, color2, i):
+def get_color_between(color1: Color, color2: Color, i: float) -> Color:
     """ i is a number between 0 and 1, if 0 then color1, if 1 color2, ... """
     if i <= 0:
         return color1
     if i >= 1:
         return color2
-    return (int(color1[0] + (color2[0] - color1[0]) * i),
+    return Color(int(color1[0] + (color2[0] - color1[0]) * i),
             int(color1[1] + (color2[1] - color1[1]) * i),
-            int(color1[2] + (color2[2] - color1[2]) * i))
+            int(color1[2] + (color2[2] - color1[2]) * i),
+            int(color1[3] + (color2[3] - color1[3]) * i))
 
-def zip(contents, file_name):
+def zip(contents: bytes, file_name: str) -> bytes:
     mod_logging.debug('Zipping %s bytes' % len(contents))
     result = cStringIO()
     zip_file = mod_zipfile.ZipFile(result, 'w', mod_zipfile.ZIP_DEFLATED, False)
@@ -56,7 +60,7 @@ def zip(contents, file_name):
     mod_logging.debug('Zipped')
     return result.read()
 
-def unzip(contents):
+def unzip(contents: bytes) -> bytes:
     mod_logging.debug('Unzipping %s bytes' % len(contents))
     zip_file = mod_zipfile.ZipFile(cStringIO(contents))
     zip_info_list = zip_file.infolist()
