@@ -17,6 +17,7 @@
 import json     as mod_json
 import os       as mod_os
 import os.path  as mod_path
+import pathlib  as mod_pathlib
 
 from . import data      as mod_data
 from . import retriever as mod_retriever
@@ -30,7 +31,7 @@ package_location = mod_data.__file__[: mod_data.__file__.rfind(mod_path.sep)]
 DEFAULT_LIST_JSON = package_location + mod_os.sep + 'list.json'
 
 def get_data(srtm1: bool=True, srtm3: bool=True, leave_zipped: bool=False, file_handler: Optional["FileHandler"]=None,
-             use_included_urls: bool=True, batch_mode: bool=False) -> mod_data.GeoElevationData:
+             use_included_urls: bool=True, batch_mode: bool=False, local_cache_dir: str = "") -> mod_data.GeoElevationData:
     """
     Get the utility object for querying elevation data.
 
@@ -65,7 +66,7 @@ def get_data(srtm1: bool=True, srtm3: bool=True, leave_zipped: bool=False, file_
     both files are present for a location -- the srtm1 will be used.
     """
     if not file_handler:
-        file_handler = FileHandler()
+        file_handler = FileHandler(local_cache_dir)
 
     if not srtm1 and not srtm3:
         raise Exception('At least one of srtm1 and srtm3 must be True')
@@ -114,29 +115,30 @@ class FileHandler:
     files in a database or Amazon S3.
     """
 
-    def get_srtm_dir(self) -> str:
-        """ The default path to store files. """
-        # Local cache path:
-        result = ""
-        if 'HOME' in mod_os.environ:
-            result = mod_os.sep.join([mod_os.environ['HOME'], '.cache', 'srtm'])
-        elif 'HOMEPATH' in mod_os.environ:
-            result = mod_os.sep.join([mod_os.environ['HOMEPATH'], '.cache', 'srtm'])
+    def __init__(self, local_cache_dir: Optional[str]=None) -> None:
+        if local_cache_dir:
+            self.local_cache_dir = local_cache_dir
         else:
-            raise Exception('No default HOME directory found, please specify a path where to store files')
+            if 'HOMEPATH' in mod_os.environ:
+                home_dir = mod_os.environ['HOMEPATH']
+            elif 'HOMEPATH' in mod_os.environ:
+                home_dir = mod_os.environ['HOMEPATH']
+            else:
+                home_dir = str(mod_pathlib.Path.home())
+            if not home_dir:
+                raise Exception('No default HOME directory found')
+            self.local_cache_dir = mod_os.sep.join([home_dir, '.cache', 'srtm'])
 
-        if not mod_path.exists(result):
-            mod_os.makedirs(result)
-
-        return result
+        if not mod_path.exists(self.local_cache_dir):
+            mod_os.makedirs(self.local_cache_dir)
 
     def exists(self, file_name: str) -> bool:
-        return mod_path.exists('%s/%s' % (self.get_srtm_dir(), file_name))
+        return mod_path.exists(mod_os.path.join(self.local_cache_dir, file_name))
 
     def write(self, file_name: str, contents: Any) -> None:
-        with open('%s/%s' % (self.get_srtm_dir(), file_name), 'wb') as f:
+        with open(mod_os.path.join(self.local_cache_dir, file_name), 'wb') as f:
             f.write(contents)
 
     def read(self, file_name: str) -> bytes:
-        with open('%s/%s' % (self.get_srtm_dir(), file_name), 'rb') as f:
+        with open(mod_os.path.join(self.local_cache_dir, file_name), 'rb') as f:
             return f.read()

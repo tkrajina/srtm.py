@@ -165,7 +165,7 @@ class Tests(mod_unittest.TestCase):
         print(elevation_without_approximation)
         print(elevation_with_approximation)
 
-        self.assertNotEquals(elevation_with_approximation, elevation_without_approximation)
+        self.assertNotEqual(elevation_with_approximation, elevation_without_approximation)
         self.assertTrue(abs(elevation_with_approximation - elevation_without_approximation) < 30) # type: ignore
 
     def test_IDW(self) -> None:
@@ -174,7 +174,7 @@ class Tests(mod_unittest.TestCase):
         # Setup with local tile
         with open("test_files/N44W072.hgt","rb") as hgtfile:
             hgt = hgtfile.read()
-        tilemap = mod_data.GeoElevationData({},{}, file_handler=mod_main.FileHandler())
+        tilemap = mod_data.GeoElevationData({},{}, file_handler=mod_main.FileHandler(""))
         tile = mod_data.GeoElevationFile('N44W072.hgt', hgt, tilemap)
         tilemap.srtm3_files["N44W072.hgt"] = ""
         tilemap.files["N44W072.hgt"] = tile
