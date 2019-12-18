@@ -119,18 +119,16 @@ class FileHandler:
         if local_cache_dir:
             self.local_cache_dir = local_cache_dir
         else:
-            if 'HOMEPATH' in mod_os.environ:
-                home_dir = mod_os.environ['HOMEPATH']
-            elif 'HOMEPATH' in mod_os.environ:
-                home_dir = mod_os.environ['HOMEPATH']
-            else:
-                home_dir = str(mod_pathlib.Path.home())
+            home_dir = mod_os.environ.get("HOME") or mod_os.environ.get("HOMEPATH") or str(mod_pathlib.Path.home()) or ""
             if not home_dir:
                 raise Exception('No default HOME directory found')
             self.local_cache_dir = mod_os.sep.join([home_dir, '.cache', 'srtm'])
 
-        if not mod_path.exists(self.local_cache_dir):
-            mod_os.makedirs(self.local_cache_dir)
+        try:
+            if not mod_path.exists(self.local_cache_dir):
+                mod_os.makedirs(self.local_cache_dir)
+        except Exception as e:
+            raise Exception(f"Error creating directory {self.local_cache_dir}: {e}")
 
     def exists(self, file_name: str) -> bool:
         return mod_path.exists(mod_os.path.join(self.local_cache_dir, file_name))
