@@ -20,10 +20,11 @@ Run all tests with:
 """
 
 import logging        as mod_logging
-import unittest as mod_unittest
+import unittest       as mod_unittest
 import srtm           as mod_srtm
 from srtm import data as mod_data
 from srtm import main as mod_main
+from srtm import utils as mod_utils
 
 mod_logging.basicConfig(level=mod_logging.DEBUG,
                         format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
@@ -174,7 +175,7 @@ class Tests(mod_unittest.TestCase):
         # Setup with local tile
         with open("test_files/N44W072.hgt","rb") as hgtfile:
             hgt = hgtfile.read()
-        tilemap = mod_data.GeoElevationData({},{}, file_handler=mod_main.FileHandler(""))
+        tilemap = mod_data.GeoElevationData({},{}, file_handler=mod_utils.FileHandler(""))
         tile = mod_data.GeoElevationFile('N44W072.hgt', hgt, tilemap)
         tilemap.srtm3_files["N44W072.hgt"] = ""
         tilemap.files["N44W072.hgt"] = tile
@@ -194,7 +195,7 @@ class Tests(mod_unittest.TestCase):
         # Setup minimal tile config
         with open("test_files/N44W072.hgt","rb") as hgtfile:
             hgt = hgtfile.read()
-        tilemap = mod_data.GeoElevationData({},{}, file_handler=mod_main.FileHandler())
+        tilemap = mod_data.GeoElevationData({},{}, file_handler=mod_utils.FileHandler())
         tile = mod_data.GeoElevationFile('N44W072.hgt', hgt, tilemap)
 
         # tuples of (lat, lon, lowerbound, upperbound)

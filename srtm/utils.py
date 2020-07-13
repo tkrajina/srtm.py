@@ -17,6 +17,9 @@
 import logging    as mod_logging
 import math       as mod_math
 import zipfile    as mod_zipfile
+import pathlib    as mod_pathlib
+import os         as mod_os
+import os.path    as mod_path
 
 from io import BytesIO as cStringIO # looks hacky but we are working with bytes
 from typing import *
@@ -68,3 +71,39 @@ def unzip(contents: bytes) -> bytes:
     result = zip_file.open(zip_info).read()
     mod_logging.debug('Unzipped')
     return result
+class FileHandler:
+    """
+    The default file handler. It can be changed if you need to save/read SRTM
+    files in a database or Amazon S3.
+    """
+
+    def __init__(self, local_cache_dir: Optional[str]=None) -> None:
+        if local_cache_dir:
+            self.local_cache_dir = local_cache_dir
+        else:
+            home_dir = str(mod_pathlib.Path.home()) or mod_os.environ.get("HOME") or mod_os.environ.get("HOMEPATH") or ""
+            if not home_dir:
+                raise Exception('No default HOME directory found')
+            self.local_cache_dir = mod_os.sep.join([home_dir, '.cache', 'srtm'])
+
+        if not mod_path.exists(self.local_cache_dir):
+            print(f"Creating {self.local_cache_dir}")
+            try:
+                mod_os.makedirs(self.local_cache_dir)
+            except Exception as e:
+                print(f"Local cache dir: {self.local_cache_dir}")
+                raise Exception(f"Error creating directory {self.local_cache_dir}: {e}")
+
+    def exists(self, file_name: str) -> bool:
+        return mod_path.exists(mod_os.path.join(self.local_cache_dir, file_name))
+
+    def write(self, file_name: str, contents: bytes) -> None:
+        print(4, len(contents))
+        fn = mod_os.path.join(self.local_cache_dir, file_name)
+        with open(fn, 'wb') as f:
+            n = f.write(contents)
+            mod_logging.debug(f"saved {n} bytes in {fn}")
+
+    def read(self, file_name: str) -> bytes:
+        with open(mod_os.path.join(self.local_cache_dir, file_name), 'rb') as f:
+            return f.read()

@@ -35,8 +35,8 @@ class GeoElevationData:
     the earth -- this will load *many* files in memory!
     """
 
-    def __init__(self, srtm1_files: Dict[str, str], srtm3_files: Dict[str, str], leave_zipped: bool=False,
-                 file_handler: Any = None, batch_mode: bool=False) -> None:
+    def __init__(self, srtm1_files: Dict[str, str], srtm3_files: Dict[str, str], file_handler: mod_utils.FileHandler,
+                 leave_zipped: bool=False, batch_mode: bool=False) -> None:
         self.srtm1_files = srtm1_files
         self.srtm3_files = srtm3_files
         self.leave_zipped = leave_zipped
@@ -115,7 +115,7 @@ class GeoElevationData:
 
         data: Optional[bytes] = None
         if self.file_handler.exists(data_file_name):
-            return self.file_handler.read(data_file_name) # type: ignore
+            return self.file_handler.read(data_file_name)
         elif self.file_handler.exists(zip_data_file_name):
             byts = self.file_handler.read(zip_data_file_name)
             return mod_utils.unzip(byts)

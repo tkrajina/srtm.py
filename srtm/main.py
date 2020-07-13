@@ -17,10 +17,10 @@
 import json     as mod_json
 import os       as mod_os
 import os.path  as mod_path
-import pathlib  as mod_pathlib
 
 from . import data      as mod_data
 from . import retriever as mod_retriever
+from . import utils     as mod_utils
 
 from typing import *
 
@@ -30,7 +30,7 @@ SRTM3_URL = 'http://dds.cr.usgs.gov/srtm/version2_1/SRTM3/'
 package_location = mod_data.__file__[: mod_data.__file__.rfind(mod_path.sep)]
 DEFAULT_LIST_JSON = package_location + mod_os.sep + 'list.json'
 
-def get_data(srtm1: bool=True, srtm3: bool=True, leave_zipped: bool=False, file_handler: Optional["FileHandler"]=None,
+def get_data(srtm1: bool=True, srtm3: bool=True, leave_zipped: bool=False, file_handler: Optional[mod_utils.FileHandler]=None,
              use_included_urls: bool=True, batch_mode: bool=False, local_cache_dir: str = "") -> mod_data.GeoElevationData:
     """
     Get the utility object for querying elevation data.
@@ -66,7 +66,7 @@ def get_data(srtm1: bool=True, srtm3: bool=True, leave_zipped: bool=False, file_
     both files are present for a location -- the srtm1 will be used.
     """
     if not file_handler:
-        file_handler = FileHandler(local_cache_dir)
+        file_handler = mod_utils.FileHandler(local_cache_dir)
 
     if not srtm1 and not srtm3:
         raise Exception('At least one of srtm1 and srtm3 must be True')
@@ -86,7 +86,7 @@ def get_data(srtm1: bool=True, srtm3: bool=True, leave_zipped: bool=False, file_
     return mod_data.GeoElevationData(srtm1_files, srtm3_files, file_handler=file_handler,
                                      leave_zipped=leave_zipped, batch_mode=batch_mode)
 
-def _get_urls(use_included_urls: bool, file_handler: "FileHandler") -> Tuple[Dict[str, str], Dict[str, str]]:
+def _get_urls(use_included_urls: bool, file_handler: mod_utils.FileHandler) -> Tuple[Dict[str, str], Dict[str, str]]:
     files_list_file_name = 'list.json'
     try:
         urls_json = _get_urls_json(use_included_urls, file_handler)
@@ -95,12 +95,11 @@ def _get_urls(use_included_urls: bool, file_handler: "FileHandler") -> Tuple[Dic
         srtm1_files = mod_retriever.retrieve_all_files_urls(SRTM1_URL)
         srtm3_files = mod_retriever.retrieve_all_files_urls(SRTM3_URL)
 
-        file_handler.write(files_list_file_name,
-                           mod_json.dumps({'srtm1': srtm1_files, 'srtm3': srtm3_files}, sort_keys=True, indent=4))
+        file_handler.write(files_list_file_name, mod_json.dumps({'srtm1': srtm1_files, 'srtm3': srtm3_files}, sort_keys=True, indent=4).encode())
 
         return srtm1_files, srtm3_files
 
-def _get_urls_json(use_included_urls: bool, file_handler: "FileHandler") -> Any:
+def _get_urls_json(use_included_urls: bool, file_handler: mod_utils.FileHandler) -> Any:
     if use_included_urls:
         with open(DEFAULT_LIST_JSON, 'r') as f:
             return mod_json.loads(f.read())
@@ -108,37 +107,3 @@ def _get_urls_json(use_included_urls: bool, file_handler: "FileHandler") -> Any:
     files_list_file_name = 'list.json'
     contents = file_handler.read(files_list_file_name)
     return mod_json.loads(contents)
-
-class FileHandler:
-    """
-    The default file handler. It can be changed if you need to save/read SRTM
-    files in a database or Amazon S3.
-    """
-
-    def __init__(self, local_cache_dir: Optional[str]=None) -> None:
-        if local_cache_dir:
-            self.local_cache_dir = local_cache_dir
-        else:
-            home_dir = str(mod_pathlib.Path.home()) or mod_os.environ.get("HOME") or mod_os.environ.get("HOMEPATH") or ""
-            if not home_dir:
-                raise Exception('No default HOME directory found')
-            self.local_cache_dir = mod_os.sep.join([home_dir, '.cache', 'srtm'])
-
-        if not mod_path.exists(self.local_cache_dir):
-            print(f"Creating {self.local_cache_dir}")
-            try:
-                mod_os.makedirs(self.local_cache_dir)
-            except Exception as e:
-                print(f"Local cache dir: {self.local_cache_dir}")
-                raise Exception(f"Error creating directory {self.local_cache_dir}: {e}")
-
-    def exists(self, file_name: str) -> bool:
-        return mod_path.exists(mod_os.path.join(self.local_cache_dir, file_name))
-
-    def write(self, file_name: str, contents: Any) -> None:
-        with open(mod_os.path.join(self.local_cache_dir, file_name), 'wb') as f:
-            f.write(contents)
-
-    def read(self, file_name: str) -> bytes:
-        with open(mod_os.path.join(self.local_cache_dir, file_name), 'rb') as f:
-            return f.read()
