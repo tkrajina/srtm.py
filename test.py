@@ -43,6 +43,7 @@ class Tests(mod_unittest.TestCase):
 
     def test_random_points(self) -> None:
         geo_elevation_data = mod_srtm.get_data()
+        self.assertEqual(597, geo_elevation_data.get_elevation(24.056313, 35.003152))
         self.assertEqual(63, geo_elevation_data.get_elevation(46., 13.))
         self.assertEqual(2714, geo_elevation_data.get_elevation(46.999999, 13.))
         self.assertEqual(1643, geo_elevation_data.get_elevation(46.999999, 13.999999))

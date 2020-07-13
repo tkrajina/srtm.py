@@ -67,10 +67,13 @@ def unzip(contents: bytes) -> bytes:
     mod_logging.debug('Unzipping %s bytes' % len(contents))
     zip_file = mod_zipfile.ZipFile(cStringIO(contents))
     zip_info_list = zip_file.infolist()
-    zip_info = zip_info_list[0]
-    result = zip_file.open(zip_info).read()
-    mod_logging.debug('Unzipped')
-    return result
+    for zi in zip_info_list:
+        if zi.filename[0] != ".":
+            result = zip_file.open(zi).read()
+            mod_logging.debug('Unzipped')
+            return result
+    raise Exception(f"No valid file found in {zip_info_list}")
+
 class FileHandler:
     """
     The default file handler. It can be changed if you need to save/read SRTM
