@@ -15,15 +15,13 @@
 # limitations under the License.
 
 import logging        as mod_logging
-import urllib.request as mod_urllib
+import requests       as mod_requests
 import re             as mod_re
 from typing import *
 
 def retrieve_all_files_urls(url: str) -> Dict[str, str]:
     mod_logging.info('Retrieving {0}'.format(url))
-    url_stream = mod_urllib.urlopen(url)
-    contents = url_stream.read()
-    url_stream.close()
+    contents = mod_requests.get(url).text
 
     url_candidates = mod_re.findall('href="(.*?)"', contents)
     urls: Dict[str, str] = {}
@@ -38,9 +36,7 @@ def retrieve_all_files_urls(url: str) -> Dict[str, str]:
 
 def get_files(url: str) -> Dict[str, str]:
     mod_logging.info('Retrieving {0}'.format(url))
-    url_stream = mod_urllib.urlopen(url)
-    contents = url_stream.read()
-    url_stream.close()
+    contents = mod_requests.get(url).text
 
     result: Dict[str, str] = {}
 
