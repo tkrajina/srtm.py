@@ -31,7 +31,7 @@ package_location = mod_data.__file__[: mod_data.__file__.rfind(mod_path.sep)]
 DEFAULT_LIST_JSON = package_location + mod_os.sep + 'list.json'
 
 def get_data(srtm1: bool=True, srtm3: bool=True, leave_zipped: bool=False, file_handler: Optional[mod_utils.FileHandler]=None,
-             use_included_urls: bool=True, batch_mode: bool=False, local_cache_dir: str = "") -> mod_data.GeoElevationData:
+             use_included_urls: bool=True, batch_mode: bool=False, local_cache_dir: str = "", timeout: int = 0) -> mod_data.GeoElevationData:
     """
     Get the utility object for querying elevation data.
 
@@ -71,7 +71,7 @@ def get_data(srtm1: bool=True, srtm3: bool=True, leave_zipped: bool=False, file_
     if not srtm1 and not srtm3:
         raise Exception('At least one of srtm1 and srtm3 must be True')
 
-    srtm1_files, srtm3_files = _get_urls(use_included_urls, file_handler)
+    srtm1_files, srtm3_files = _get_urls(use_included_urls, file_handler, timeout)
 
     assert srtm1_files
     assert srtm3_files
@@ -84,16 +84,17 @@ def get_data(srtm1: bool=True, srtm3: bool=True, leave_zipped: bool=False, file_
     assert srtm1_files or srtm3_files
 
     return mod_data.GeoElevationData(srtm1_files, srtm3_files, file_handler=file_handler,
-                                     leave_zipped=leave_zipped, batch_mode=batch_mode)
+                                     leave_zipped=leave_zipped, batch_mode=batch_mode,
+                                     timeout=timeout)
 
-def _get_urls(use_included_urls: bool, file_handler: mod_utils.FileHandler) -> Tuple[Dict[str, str], Dict[str, str]]:
+def _get_urls(use_included_urls: bool, file_handler: mod_utils.FileHandler, timeout: int) -> Tuple[Dict[str, str], Dict[str, str]]:
     files_list_file_name = 'list.json'
     try:
         urls_json = _get_urls_json(use_included_urls, file_handler)
         return urls_json['srtm1'], urls_json['srtm3']
     except:
-        srtm1_files = mod_retriever.retrieve_all_files_urls(SRTM1_URL)
-        srtm3_files = mod_retriever.retrieve_all_files_urls(SRTM3_URL)
+        srtm1_files = mod_retriever.retrieve_all_files_urls(SRTM1_URL, timeout)
+        srtm3_files = mod_retriever.retrieve_all_files_urls(SRTM3_URL, timeout)
 
         file_handler.write(files_list_file_name, mod_json.dumps({'srtm1': srtm1_files, 'srtm3': srtm3_files}, sort_keys=True, indent=4).encode())
 

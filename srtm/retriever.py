@@ -22,9 +22,9 @@ from . import utils   as mod_utils
 
 from typing import *
 
-def retrieve_all_files_urls(url: str) -> Dict[str, str]:
+def retrieve_all_files_urls(url: str, timeout: int) -> Dict[str, str]:
     mod_logging.info('Retrieving {0}'.format(url))
-    contents = mod_requests.get(url, timeout=mod_utils.DEFAULT_TIMEOUT).text
+    contents = mod_requests.get(url, timeout=timeout or mod_utils.DEFAULT_TIMEOUT).text
 
     url_candidates = mod_re.findall('href="(.*?)"', contents)
     urls: Dict[str, str] = {}
@@ -33,13 +33,13 @@ def retrieve_all_files_urls(url: str) -> Dict[str, str]:
         if url_candidate.endswith('/') and not url_candidate in url:
             files_url = '{0}/{1}'.format(url, url_candidate)
 
-            urls.update(get_files(files_url))
+            urls.update(get_files(files_url, timeout))
 
     return urls
 
-def get_files(url: str) -> Dict[str, str]:
+def get_files(url: str, timeout: int) -> Dict[str, str]:
     mod_logging.info('Retrieving {0}'.format(url))
-    contents = mod_requests.get(url, timeout=mod_utils.DEFAULT_TIMEOUT).text
+    contents = mod_requests.get(url, timeout=timeout or mod_utils.DEFAULT_TIMEOUT).text
 
     result: Dict[str, str] = {}
 

@@ -36,11 +36,12 @@ class GeoElevationData:
     """
 
     def __init__(self, srtm1_files: Dict[str, str], srtm3_files: Dict[str, str], file_handler: mod_utils.FileHandler,
-                 leave_zipped: bool=False, batch_mode: bool=False) -> None:
+                 leave_zipped: bool=False, batch_mode: bool=False, timeout: int = 0) -> None:
         self.srtm1_files = srtm1_files
         self.srtm3_files = srtm3_files
         self.leave_zipped = leave_zipped
         self.file_handler = file_handler # TODO: file_handler mypy
+        self.timeout = timeout
 
         # Lazy loaded files used in current app:
         self.files: Dict[str, GeoElevationFile] = {}
@@ -132,7 +133,7 @@ class GeoElevationData:
             return None
 
         try:
-            r = mod_requests.get(url, timeout=mod_utils.DEFAULT_TIMEOUT)
+            r = mod_requests.get(url, timeout=self.timeout or mod_utils.DEFAULT_TIMEOUT)
         except mod_requests.exceptions.Timeout:
             raise Exception('Connection to %s failed (timeout)' % url)
         if r.status_code < 200 or 300 <= r.status_code:
