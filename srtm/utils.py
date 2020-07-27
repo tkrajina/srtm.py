@@ -26,6 +26,8 @@ from typing import *
 
 ONE_DEGREE = 1000. * 10000.8 / 90.
 
+DEFAULT_TIMEOUT = 15
+
 class Color(NamedTuple):
     red: int
     green: int

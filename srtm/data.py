@@ -132,7 +132,7 @@ class GeoElevationData:
             return None
 
         try:
-            r = mod_requests.get(url, timeout=5)
+            r = mod_requests.get(url, timeout=mod_utils.DEFAULT_TIMEOUT)
         except mod_requests.exceptions.Timeout:
             raise Exception('Connection to %s failed (timeout)' % url)
         if r.status_code < 200 or 300 <= r.status_code:
