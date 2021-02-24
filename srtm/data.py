@@ -23,10 +23,50 @@ import math as mod_math
 import re as mod_re
 import struct as mod_struct
 import requests as mod_requests
+import json as mod_json
+import os as mod_os
+import os.path as mod_path
 
 from . import utils as mod_utils
 
 from typing import *
+
+package_location = mod_utils.__file__[: mod_utils.__file__.rfind(mod_path.sep)]
+DEFAULT_LIST_JSON = package_location + mod_os.sep + 'urls.json'
+
+SRTMGL1 = "SRTMGL1"
+SRTMGL3 = "SRTMGL3"
+SRTMGL3S = "SRTMGL3S"
+
+SRTM_DATASETS = [
+    SRTMGL1,
+    SRTMGL3,
+    SRTMGL3S,
+]
+
+class SrtmData:
+    def __init__(self, name: str, json: Dict[str, object]) -> None:
+      self.name = name
+      self.base_url: str = json["baseUrl"] # type: ignore
+      self.description: str = json["description"] # type: ignore
+      self.files: Dict[str, str] = json["files"] # type: ignore
+
+    def get_url(self, name: str) -> Optional[str]:
+        if not name in self.files:
+            return None
+        return self.base_url + self.files[name]
+
+def _get_urls() -> Dict[str, SrtmData]:
+    res: Dict[str, SrtmData] = {}
+    for k in SRTM_DATASETS:
+        assert (k in SRTM_DATASETS), f"Missing {k}"
+
+    with open(DEFAULT_LIST_JSON, 'r') as f:
+        jsn = mod_json.loads(f.read())
+        for key in jsn:
+            res[key] = SrtmData(key, jsn)
+    return res
+
 
 class GeoElevationData:
     """
@@ -35,10 +75,8 @@ class GeoElevationData:
     the earth -- this will load *many* files in memory!
     """
 
-    def __init__(self, srtm1_files: Dict[str, str], srtm3_files: Dict[str, str], file_handler: mod_utils.FileHandler,
+    def __init__(self, srtm_data: Dict[str, "SrtmData"], file_handler: mod_utils.FileHandler,
                  leave_zipped: bool=False, batch_mode: bool=False, timeout: int = 0) -> None:
-        self.srtm1_files = srtm1_files
-        self.srtm3_files = srtm3_files
         self.leave_zipped = leave_zipped
         self.file_handler = file_handler # TODO: file_handler mypy
         self.timeout = timeout
@@ -49,7 +87,13 @@ class GeoElevationData:
         self.batch_mode = batch_mode
 
     def get_elevation(self, latitude: float, longitude: float, approximate: bool=False) -> Optional[float]:
-        geo_elevation_file = self.get_file(float(latitude), float(longitude))
+        geo_elevation_file: Optional[GeoElevationFile]
+        for srtm_dataset in SRTM_DATASETS:
+            if not geo_elevation_file:
+                geo_elevation_file = self.get_file(float(latitude), float(longitude), srtm_dataset=srtm_dataset)
+
+        if not geo_elevation_file:
+            raise Exception(f"File not found for ({latitude}, {longitude})")
 
         #mod_logging.debug('File for ({0}, {1}) -> {2}'.format(
         #                  latitude, longitude, geo_elevation_file))
@@ -84,7 +128,7 @@ class GeoElevationData:
             return None
         return tile._InverseDistanceWeighted(latitude, longitude, radius)
 
-    def get_file(self, latitude: float, longitude: float) -> Optional["GeoElevationFile"]:
+    def get_file(self, latitude: float, longitude: float, srtm_dataset: str = "") -> Optional["GeoElevationFile"]:
         """
         If the file can't be found -- it will be retrieved from the server.
         """
@@ -96,7 +140,7 @@ class GeoElevationData:
         if (file_name in self.files):
             return self.files[file_name]
         else:
-            data = self.retrieve_or_load_file_data(file_name)
+            data = self.retrieve_or_load_file_data(file_name, srtm_dataset=srtm_dataset)
             if not data:
                 return None
 
@@ -110,9 +154,12 @@ class GeoElevationData:
 
             return result
 
-    def retrieve_or_load_file_data(self, file_name: str) -> Optional[bytes]:
+    def retrieve_or_load_file_data(self, file_name: str, srtm_dataset: str) -> Optional[bytes]:
         data_file_name = file_name
-        zip_data_file_name = '{0}.zip'.format(file_name)
+
+        srtm_dataset = srtm_dataset or SRTM_DATASETS[0];
+
+        zip_data_file_name = f'{srtm_dataset}_{file_name}.zip'
 
         data: Optional[bytes] = None
         if self.file_handler.exists(data_file_name):
@@ -120,16 +167,14 @@ class GeoElevationData:
         elif self.file_handler.exists(zip_data_file_name):
             byts = self.file_handler.read(zip_data_file_name)
             return mod_utils.unzip(byts)
-
-        url = None
-
-        if (file_name in self.srtm1_files):
-            url = self.srtm1_files[file_name]
-        elif (file_name in self.srtm3_files):
-            url = self.srtm3_files[file_name]
-
+        
+        srtm_datas = _get_urls()
+        srtm_data = srtm_datas[srtm_dataset]
+        if not srtm_data:
+            raise Exception(f"No srtm dataset for {srtm_dataset}")
+        url = srtm_data.get_url()
         if not url:
-            #mod_logging.error('No file found: {0}'.format(file_name))
+            mod_logging.error('No file found: {0}'.format(file_name))
             return None
 
         try:
@@ -168,8 +213,7 @@ class GeoElevationData:
         else:
             east_west = 'W'
 
-        file_name = '%s%s%s%s.hgt' % (north_south, str(int(abs(mod_math.floor(latitude)))).zfill(2),
-                                      east_west, str(int(abs(mod_math.floor(longitude)))).zfill(3))
+        file_name = f'{north_south}{str(int(abs(mod_math.floor(latitude)))).zfill(2)}{east_west}{str(int(abs(mod_math.floor(longitude)))).zfill(3)}'
 
         if not (file_name in self.srtm1_files) and not (file_name in self.srtm3_files):
             #mod_logging.debug('No file found for ({0}, {1}) (file_name: {2})'.format(latitude, longitude, file_name))

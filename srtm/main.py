@@ -14,24 +14,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import json     as mod_json
-import os       as mod_os
-import os.path  as mod_path
-
-from . import data      as mod_data
-from . import retriever as mod_retriever
-from . import utils     as mod_utils
-
 from typing import *
+
+from . import data as mod_data
+from . import utils as mod_utils
 
 SRTM1_URL = 'https://dds.cr.usgs.gov/srtm/version2_1/SRTM1/'
 SRTM3_URL = 'https://dds.cr.usgs.gov/srtm/version2_1/SRTM3/'
 
-package_location = mod_data.__file__[: mod_data.__file__.rfind(mod_path.sep)]
-DEFAULT_LIST_JSON = package_location + mod_os.sep + 'list.json'
-
-def get_data(srtm1: bool=True, srtm3: bool=True, leave_zipped: bool=False, file_handler: Optional[mod_utils.FileHandler]=None,
-             use_included_urls: bool=True, batch_mode: bool=False, local_cache_dir: str = "", timeout: int = 0) -> mod_data.GeoElevationData:
+def get_data(leave_zipped: bool=False, file_handler: Optional[mod_utils.FileHandler]=None,
+             batch_mode: bool=False, local_cache_dir: str = "", timeout: int = 0) -> mod_data.GeoElevationData:
     """
     Get the utility object for querying elevation data.
 
@@ -68,43 +60,6 @@ def get_data(srtm1: bool=True, srtm3: bool=True, leave_zipped: bool=False, file_
     if not file_handler:
         file_handler = mod_utils.FileHandler(local_cache_dir)
 
-    if not srtm1 and not srtm3:
-        raise Exception('At least one of srtm1 and srtm3 must be True')
-
-    srtm1_files, srtm3_files = _get_urls(use_included_urls, file_handler, timeout)
-
-    assert srtm1_files
-    assert srtm3_files
-
-    if not srtm1:
-        srtm1_files = {}
-    if not srtm3:
-        srtm3_files = {}
-
-    assert srtm1_files or srtm3_files
-
-    return mod_data.GeoElevationData(srtm1_files, srtm3_files, file_handler=file_handler,
+    return mod_data.GeoElevationData(_get_urls(), file_handler=file_handler,
                                      leave_zipped=leave_zipped, batch_mode=batch_mode,
                                      timeout=timeout)
-
-def _get_urls(use_included_urls: bool, file_handler: mod_utils.FileHandler, timeout: int) -> Tuple[Dict[str, str], Dict[str, str]]:
-    files_list_file_name = 'list.json'
-    try:
-        urls_json = _get_urls_json(use_included_urls, file_handler)
-        return urls_json['srtm1'], urls_json['srtm3']
-    except:
-        srtm1_files = mod_retriever.retrieve_all_files_urls(SRTM1_URL, timeout)
-        srtm3_files = mod_retriever.retrieve_all_files_urls(SRTM3_URL, timeout)
-
-        file_handler.write(files_list_file_name, mod_json.dumps({'srtm1': srtm1_files, 'srtm3': srtm3_files}, sort_keys=True, indent=4).encode())
-
-        return srtm1_files, srtm3_files
-
-def _get_urls_json(use_included_urls: bool, file_handler: mod_utils.FileHandler) -> Any:
-    if use_included_urls:
-        with open(DEFAULT_LIST_JSON, 'r') as f:
-            return mod_json.loads(f.read())
-
-    files_list_file_name = 'list.json'
-    contents = file_handler.read(files_list_file_name)
-    return mod_json.loads(contents)

@@ -1,7 +1,8 @@
 GIT_PORCELAIN_STATUS=$(shell git status --porcelain)
 
-test:
+mypy:
 	mypy --strict .
+test: mypy
 	python -m unittest test
 	python example.py
 check-all-commited:
