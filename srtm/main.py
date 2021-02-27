@@ -24,8 +24,8 @@ from . import utils     as mod_utils
 
 from typing import *
 
-SRTM1_URL = 'https://dds.cr.usgs.gov/srtm/version2_1/SRTM1/'
-SRTM3_URL = 'https://dds.cr.usgs.gov/srtm/version2_1/SRTM3/'
+SRTM1_URL = 'https://srtm.kurviger.de/SRTM1/'
+SRTM3_URL = 'https://srtm.kurviger.de/SRTM3/'
 
 package_location = mod_data.__file__[: mod_data.__file__.rfind(mod_path.sep)]
 DEFAULT_LIST_JSON = package_location + mod_os.sep + 'list.json'
