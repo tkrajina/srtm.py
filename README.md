@@ -22,6 +22,24 @@ Cache files with urls of all SRTM files are generated in your HOME directory. In
     elevation_data = srtm.get_data(local_cache_dir="mydir")
     print('CGN Airport elevation (meters):', elevation_data.get_elevation(50.8682, 7.1377))
 
+## Packaging with PyInstaller
+
+By default, `srtm.get_data()` reads the bundled `srtm/list.json` file. Include this data file when packaging an application with PyInstaller:
+
+```sh
+pyinstaller --onefile --collect-data srtm your_app.py
+```
+
+Use the import package name `srtm` for `--collect-data`, not the distribution
+name `SRTM.py`. The same option also works with `--onedir`. It keeps the file
+alongside the bundled package, where SRTM.py expects to find it.
+
+This bundles the URL index, not the elevation tiles. Tiles still need to be
+available in the runtime cache or downloaded on demand. If you customize
+`local_cache_dir`, choose a writable location outside the application bundle.
+
+See PyInstaller's [data collection options](https://pyinstaller.org/en/stable/usage.html#cmdoption-collect-data).
+
 ## GPS Tracks
 
 You can add elevations for all points in a GPS track with:
